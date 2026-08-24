@@ -1,0 +1,19 @@
+{
+  "id": "/physiocore_v2.html",
+  "name": "PhysioCore",
+  "short_name": "PhysioCore",
+  "description": "עוזר קליני וקינזיולוגי — פיזיותרפיה ועיסוי רפואי, עם מודל אנטומי תלת־ממדי",
+  "lang": "he",
+  "dir": "rtl",
+  "start_url": "/physiocore_v2.html",
+  "scope": "/physiocore_",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ededed",
+  "theme_color": "#ffffff",
+  "icons": [
+    { "src": "/physiocore_icon_192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/physiocore_icon_512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/physiocore_icon_maskable_512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
