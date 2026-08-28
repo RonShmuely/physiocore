@@ -1,0 +1,1876 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl" class="notranslate" translate="no">
+<head>
+<meta charset="UTF-8">
+<meta name="google" content="notranslate">
+  <meta name="googlebot" content="notranslate">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<link rel="manifest" href="physiocore_manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="physiocore_icon_192.png">
+<link rel="apple-touch-icon" href="physiocore_icon_192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="PhysioCore">
+<title>PhysioCore V2 — עוזר קליני וקינזיולוגי</title>
+<script>
+/* PWA: register with the narrow '/physiocore_' scope so the Drop-root sw.js (scope '/') keeps its other apps */
+if ("serviceWorker" in navigator) {
+  addEventListener("load", () => {
+    navigator.serviceWorker.register("/physiocore_sw.js", { scope: "/physiocore_" })
+      .then(r => { window.__pcSW = r; })
+      .catch(() => {});
+  });
+}
+</script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@600;700;800&family=Space+Grotesk:wght@500;700;800&family=Heebo:wght@400;600;700;800;900&display=swap');
+  :root{
+    /* Finance OS — white/red/black hybrid-hardware theme */
+    --bg: #f6f4f1; --card:#ffffff; --panel:#f8fafc;
+    --line:#e2e8f0; --line2:#94a3b8;
+    --txt:#0f172a; --dim:#475569; --dim2:#94a3b8;
+    --red: #854d0e; --red2: #713f12; --redTint: #fefce8;
+    --navy:#0f172a; --green: #0ea5e9; --greenTint: #f0f9ff;
+    --cyan: #38bdf8; --oled:#090d16; --oledLine:#1e293b;
+    --r:20px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:"Space Grotesk","Heebo",system-ui,sans-serif;
+    background-color:var(--bg);
+    background-image:radial-gradient(#d4d4d8 1.2px, transparent 1.2px);
+    background-size:16px 16px;
+    color:var(--txt); min-height:100vh; padding-bottom:80px;
+  }
+  bdi{unicode-bidi:isolate}
+  .num,.lat{font-family:"JetBrains Mono","Space Grotesk",monospace;font-feature-settings:'tnum' 1;letter-spacing:-0.02em}
+  header{
+    position:sticky; top:0; z-index:50;
+    background:rgba(255,255,255,.92); backdrop-filter:blur(12px);
+    border-bottom:2px solid var(--line);
+    padding:12px 16px; display:flex; align-items:center; gap:12px;
+  }
+  .logo{
+    width:44px;height:44px;border-radius:50%;flex:none;
+    border:1.5px dashed #0284c7;
+    display:flex;align-items:center;justify-content:center;font-size:21px;
+    animation:spinSlow 10s linear infinite;
+  }
+  .logo>span{animation:spinSlowRev 10s linear infinite;display:block}
+  @keyframes spinSlow{to{transform:rotate(360deg)}}
+  @keyframes spinSlowRev{to{transform:rotate(-360deg)}}
+  header h1{font-size:20px;font-weight:800;letter-spacing:.4px;color:var(--navy)}
+  header h1 span{color:#0284c7}
+  header p{font-size:11.5px;color:var(--dim)}
+  .v2badge{margin-inline-start:auto;font-family:"JetBrains Mono",monospace;font-size:11px;font-weight:800;color:#fff;
+    border:2px solid var(--navy);border-radius:10px;padding:4px 11px;background:var(--navy);letter-spacing:1px}
+  nav{
+    position:fixed;bottom:0;right:0;left:0;z-index:60;
+    background:rgba(255,255,255,.96);backdrop-filter:blur(14px);
+    border-top:2px solid var(--line);
+    display:flex;justify-content:space-around;
+    padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+  }
+  nav button{
+    background:none;border:none;color:var(--dim2);font-family:inherit;
+    font-size:10.5px;font-weight:700;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:3px;
+    padding:5px 8px;border-radius:12px;transition:all .2s;min-width:52px;
+  }
+  nav button .ic{font-size:19px;line-height:1;filter:grayscale(70%);transition:all .2s}
+  nav button.on{color:#0284c7}
+  nav button.on .ic{filter:none;transform:translateY(-1px)}
+  nav button.on::after{content:"";width:18px;height:3px;border-radius:3px;background:var(--red);margin-top:1px}
+  main{max-width:860px;margin:0 auto;padding:14px}
+  section.tab{display:none;animation:fadeUp .28s ease}
+  section.tab.on{display:block}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  h2.sect{font-size:16px;font-weight:800;margin:6px 0 12px;display:flex;align-items:center;gap:8px;color:var(--navy)}
+  h2.sect .ic{font-size:20px}
+  .info-toggle{
+    background:none;border:none;cursor:pointer;font-size:13px;padding:3px 6px;border-radius:6px;
+    color:var(--dim);transition:all .18s;line-height:1;display:inline-flex;align-items:center;justify-content:center;
+    margin-inline-start:auto;
+  }
+  .info-toggle:hover,.info-toggle.on{color:var(--red);background:var(--redTint)}
+  .hint{
+    display:none;font-size:12.5px;color:var(--dim);margin-bottom:12px;line-height:1.6;
+    background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 13px;
+  }
+  .hint.show{display:block;animation:fadeIn .2s ease}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  .card{
+    background:var(--card);
+    border:2px solid var(--line);border-radius:var(--r);
+    border-top:6px solid var(--navy);
+    box-shadow:0 4px 20px -2px rgba(0,0,0,.05);
+    padding:14px;margin-bottom:12px;
+    transition:border-color .22s, box-shadow .22s, transform .15s;
+    position:relative;overflow:hidden;
+  }
+  .card.click{cursor:pointer}
+  .card.click:hover,.card.click:focus-visible{border-color:var(--red);box-shadow:0 16px 32px -8px rgba(239,68,68,.15);transform:translateY(-1px)}
+  #tab-atlas .card{border-top-color:var(--red)}
+  #tab-move .card{border-top-color:var(--green)}
+  #tab-path .card{border-top-color:var(--red)}
+  #tab-learn .card{border-top-color:var(--navy)}
+  #tab-clinic .card:nth-of-type(1){border-top-color:var(--green)}
+  #tab-clinic .card:nth-of-type(2){border-top-color:var(--navy)}
+  .chip{
+    display:inline-block;font-size:11px;font-weight:800;color:var(--red);
+    background:#fff;border:1.5px solid var(--red);border-radius:999px;
+    padding:3px 11px;margin-bottom:8px;letter-spacing:.2px;
+  }
+  .chip.blue{color:var(--navy);background:#fff;border-color:var(--navy)}
+  .chip.red{color:#fff;background:var(--red);border-color:var(--red)}
+  .lat{font-size:12px;color:#0369a1;font-weight:700;direction:ltr;text-align:left;display:block;margin-top:2px}
+  .cardTitle{font-size:15.5px;font-weight:800;color:var(--navy)}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  .filters{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
+  .filters::-webkit-scrollbar{display:none}
+  .fchip{
+    flex:none;font-family:inherit;font-size:12px;font-weight:800;cursor:pointer;
+    color:var(--dim);background:#fff;border:2px solid var(--line);
+    border-radius:999px;padding:7px 14px;transition:all .18s;
+  }
+  .fchip.on{color:#fff;background:var(--red);border-color:var(--red);box-shadow:0 4px 12px rgba(239,68,68,.35)}
+  .search{
+    width:100%;font-family:inherit;font-size:14px;color:var(--txt);
+    background:#fff;border:2px solid var(--line);border-radius:14px;
+    padding:11px 14px;margin-bottom:10px;outline:none;transition:border-color .2s;
+  }
+  .search:focus{border-color:var(--red)}
+  .search::placeholder{color:var(--dim2)}
+  .drow{padding:9px 0;border-top:1px dashed var(--line)}
+  .drow:first-of-type{border-top:none}
+  .drow .lbl{font-size:11px;font-weight:800;color:var(--red);letter-spacing:.3px;margin-bottom:3px}
+  .drow .val{font-size:13.5px;line-height:1.65;color:#334155}
+  .redflag{background:var(--redTint);border:2px solid var(--red);border-radius:12px;padding:10px 12px;margin-top:10px}
+  .redflag .lbl{color:var(--red2)}
+  .redflag .val{color:#7f1d1d}
+  #viewerWrap{position:relative;border-radius:var(--r);overflow:hidden;
+    border:2px solid var(--oledLine);
+    background:var(--oled);height:62vh;min-height:400px;
+    box-shadow:0 4px 20px -2px rgba(0,0,0,.15)}
+  #canvas3d{width:100%;height:100%;display:block;touch-action:none}
+  #loader3d{
+    position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:14px;background:rgba(9,13,22,.94);z-index:5;transition:opacity .4s;
+  }
+  #loader3d.hide{opacity:0;pointer-events:none}
+  .spin{width:44px;height:44px;border-radius:50%;border:1.5px dashed #0284c7;animation:sp 1.6s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  #loadBarWrap{width:220px;height:6px;background:#1e293b;border-radius:6px;overflow:hidden}
+  #loadBar{height:100%;width:0%;background:linear-gradient(90deg,var(--red),var(--cyan));border-radius:6px;transition:width .2s}
+  #loadPct{font-size:12px;color:#7dd3fc;font-family:"JetBrains Mono",monospace}
+  #err3d{display:none;position:absolute;inset:0;z-index:6;background:rgba(9,13,22,.96);
+    padding:24px;text-align:center;flex-direction:column;justify-content:center;gap:10px;font-size:13.5px;line-height:1.7;color:#94a3b8}
+  #err3d.show{display:flex}
+  #err3d b{color:var(--red);font-size:15px}
+  .vbtns{position:absolute;top:10px;right:10px;left:10px;z-index:4;display:flex;gap:6px;flex-wrap:wrap;pointer-events:none}
+  .vbtns button{
+    pointer-events:auto;font-family:inherit;font-size:11.5px;font-weight:800;cursor:pointer;
+    color:#e2e8f0;background:rgba(15,23,42,.88);backdrop-filter:blur(8px);
+    border:1.5px solid #334155;border-radius:10px;padding:7px 11px;transition:all .18s;
+  }
+  .vbtns button.on,.vbtns button:hover{border-color:var(--cyan);color:var(--cyan)}
+  .structBadge{display:inline-block;font-size:11px;font-weight:800;color:#0891b2;background:#ecfeff;
+    border:1.5px solid #22d3ee;border-radius:999px;padding:3px 11px;margin-bottom:8px;margin-inline-start:6px}
+  #ctrlHint{position:absolute;bottom:8px;left:10px;z-index:3;font-size:10.5px;color:#64748b;
+    background:rgba(15,23,42,.75);border-radius:8px;padding:4px 9px;pointer-events:none;transition:opacity .2s}
+  /* leader-line callout: annotation note anchored to the tapped 3D point */
+  #calloutSvg{position:absolute;inset:0;width:100%;height:100%;z-index:7;pointer-events:none;overflow:visible}
+  #calloutLine{fill:none;stroke:var(--cyan);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;
+    filter:drop-shadow(0 0 4px rgba(0,240,255,.45))}
+  #calloutDot{fill:var(--cyan);filter:drop-shadow(0 0 5px rgba(0,240,255,.8))}
+  #calloutDotRing{fill:none;stroke:var(--cyan);stroke-width:1.2;animation:cRing 1.5s ease-out infinite}
+  @keyframes cRing{0%{r:4px;opacity:.85}100%{r:15px;opacity:0}}
+  #callout{
+    position:absolute;z-index:8;width:218px;max-width:64%;
+    background:rgba(11,17,32,.78);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    border:1.5px solid rgba(0,240,255,.4);border-radius:14px;padding:11px 13px;color:#e2e8f0;
+    box-shadow:0 8px 24px -6px rgba(0,0,0,.55);
+    opacity:0;transform:scale(.86);transform-origin:center;pointer-events:none;
+    transition:opacity .26s ease,transform .3s cubic-bezier(.34,1.45,.5,1);
+  }
+  #callout.show{opacity:1;transform:none;pointer-events:auto}
+  #callout .cMeta{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px}
+  #callout .cChip{font-size:9.5px;font-weight:800;border-radius:999px;padding:2.5px 9px;
+    border:1px solid rgba(148,163,184,.45);color:#cbd5e1;letter-spacing:.2px}
+  #callout .cChip.cy{border-color:rgba(0,240,255,.5);color:var(--cyan)}
+  #callout .cTitle{font-size:13.5px;font-weight:800;color:#fff;line-height:1.4}
+  #callout .cLat{display:block;font-family:"JetBrains Mono",monospace;font-size:10.5px;color:#7dd3fc;margin:3px 0 7px}
+  #callout .cDesc{font-size:11.5px;line-height:1.55;color:#cbd5e1}
+  #callout .cMore{
+    margin-top:9px;width:100%;font-family:inherit;font-size:11.5px;font-weight:800;cursor:pointer;
+    color:#0b1120;background:var(--cyan);border:none;border-radius:9px;padding:7px 10px;transition:filter .15s;
+  }
+  #callout .cMore:hover{filter:brightness(1.12)}
+  .credit{font-size:10.5px;color:var(--dim2);margin-top:8px;line-height:1.6}
+  .credit a{color:var(--dim)}
+  #fcStage{perspective:1200px;height:340px;margin-bottom:12px}
+  #fcCard{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,.1,.2,1);cursor:pointer}
+  #fcCard.flip{transform:rotateY(180deg)}
+  .fcFace{
+    position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+    border-radius:20px;border:2px solid var(--line);border-top:6px solid var(--navy);padding:20px;
+    display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:10px;
+    background:#fff;box-shadow:0 4px 20px -2px rgba(0,0,0,.05);
+  }
+  .fcFace.back{transform:rotateY(180deg);justify-content:flex-start;text-align:right;align-items:stretch;overflow-y:auto;border-top-color:var(--red)}
+  .fcNav{display:flex;gap:10px;align-items:center;justify-content:center}
+  .fcNav button{
+    font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;color:var(--navy);
+    background:#fff;border:2px solid var(--line);border-radius:12px;padding:10px 18px;transition:all .18s;
+  }
+  .fcNav button:hover{border-color:var(--red);color:var(--red)}
+  #fcCount{font-size:12px;color:var(--dim);font-family:"JetBrains Mono",monospace}
+  .qopt{
+    display:block;width:100%;text-align:right;font-family:inherit;font-size:13.5px;line-height:1.55;font-weight:600;
+    color:var(--txt);background:var(--panel);border:2px solid var(--line);border-radius:14px;
+    padding:12px 14px;margin-bottom:9px;cursor:pointer;transition:all .18s;
+  }
+  .qopt:hover{border-color:var(--red)}
+  .qopt.correct{background:var(--greenTint);border-color:var(--green);color:#065f46}
+  .qopt.wrong{background:var(--redTint);border-color:var(--red);color:#991b1b}
+  .qopt:disabled{cursor:default;opacity:.9}
+  #quizExpl{display:none;background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:13px;font-size:13px;line-height:1.65;color:#334155;margin-top:8px}
+  #quizExpl.show{display:block}
+  .primary{
+    font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;
+    color:#fff;background:var(--red);border:none;border-radius:12px;padding:12px 22px;transition:all .15s;
+  }
+  .primary:hover{background:var(--red2);box-shadow:0 4px 12px rgba(239,68,68,.35);transform:translateY(-1px)}
+  .primary:active{transform:scale(.97)}
+  .ghost{
+    font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;
+    color:var(--navy);background:#fff;border:2px solid var(--navy);border-radius:12px;padding:11px 18px;transition:all .15s;
+  }
+  .ghost:hover{background:var(--navy);color:#fff}
+  .stage{border-inline-start:4px solid var(--red);padding-inline-start:12px;margin-bottom:14px}
+  .stage h4{font-size:13.5px;font-weight:800;color:var(--navy);margin-bottom:6px}
+  .pitem{display:flex;align-items:center;gap:8px;background:var(--panel);border:2px solid var(--line);
+    border-radius:12px;padding:9px 12px;margin-bottom:7px;font-size:13px;font-weight:600}
+  .pitem button{margin-inline-start:auto;background:none;border:none;color:var(--red);font-size:15px;cursor:pointer}
+  .addrow{display:flex;gap:8px;margin-bottom:8px}
+  .addrow input,.addrow select{
+    flex:1;font-family:inherit;font-size:13px;color:var(--txt);background:#fff;
+    border:2px solid var(--line);border-radius:12px;padding:9px 12px;outline:none;
+  }
+  .addrow input:focus,.addrow select:focus{border-color:var(--red)}
+  textarea.noteBox{
+    width:100%;min-height:90px;font-family:inherit;font-size:13.5px;line-height:1.6;color:var(--txt);
+    background:#fff;border:2px solid var(--line);border-radius:14px;padding:12px;outline:none;resize:vertical;
+  }
+  textarea.noteBox:focus{border-color:var(--red)}
+  .noteCard{position:relative}
+  .noteCard .del{position:absolute;top:10px;left:10px;background:none;border:none;color:var(--red);cursor:pointer;font-size:15px}
+  .noteDate{font-size:10.5px;color:var(--dim2);margin-top:6px;font-family:"JetBrains Mono",monospace}
+  #modal{position:fixed;inset:0;z-index:100;display:none;align-items:flex-end;justify-content:center;background:rgba(15,23,42,.45);backdrop-filter:blur(4px)}
+  #modal.show{display:flex}
+  #modalBox{
+    width:100%;max-width:760px;max-height:86vh;overflow-y:auto;
+    background:#fff;border:2px solid var(--line);border-top:6px solid var(--red);border-radius:24px 24px 0 0;
+    padding:18px 16px 30px;animation:sheetUp .3s ease;
+  }
+  @keyframes sheetUp{from{transform:translateY(60px);opacity:0}to{transform:none;opacity:1}}
+  #modalClose{position:sticky;top:0;float:left;background:#fff;border:2px solid var(--line);
+    color:var(--navy);width:32px;height:32px;border-radius:50%;font-size:15px;cursor:pointer;font-weight:800}
+  #modalClose:hover{border-color:var(--red);color:var(--red)}
+  .grabber{width:44px;height:5px;border-radius:5px;background:var(--line);margin:0 auto 12px}
+  @media (min-width:720px){
+    #modal{align-items:center;padding:20px}
+    #modalBox{border-radius:24px}
+    #viewerWrap{height:68vh}
+  }
+  .empty{padding:26px;text-align:center;color:var(--dim2);font-size:13px}
+  @media print{
+    header,nav,.filters,.search,.addrow,.vbtns{display:none!important}
+    body{background:#fff;color:#000;padding:0}
+    .card,.stage{border-color:#999;background:#fff;color:#000}
+    .drow .val{color:#222}
+  }
+</style>
+</head>
+<body class="notranslate" translate="no">
+
+<header>
+  <div class="logo"><span>🫀</span></div>
+  <div>
+    <h1>Physio<span>Core</span></h1>
+    <p>עוזר קליני וקינזיולוגי · פיזיותרפיה ועיסוי רפואי · עבור גאיה</p>
+  </div>
+  <span class="v2badge">V2</span>
+</header>
+
+<main>
+
+  <!-- ============ 3D ============ -->
+  <section class="tab on" id="tab-3d">
+    <h2 class="sect"><span class="ic">🧍</span> מודל אנטומי תלת־ממדי <button class="info-toggle" title="הסבר" aria-label="הסבר">ℹ️</button></h2>
+    <p class="hint">מודל אנטומי אמיתי (‏<bdi>Open3DModel / Z-Anatomy</bdi>‏, בשימוש אקדמי ברחבי אירופה) — כל שריר, עצם ורצועה הם מבנה נפרד הניתן לבחירה. הקש על שריר כדי לזהות אותו ולפתוח את הכרטיס הקליני.</p>
+    <div id="viewerWrap">
+      <div class="vbtns">
+        <button id="btnFront" class="on">מבט קדמי</button>
+        <button id="btnBack">מבט אחורי</button>
+        <button id="btnSide">מבט צדי</button>
+        <button id="btnIso">🎯 בידוד שרירים</button>
+        <button id="btnSpin">⟳ סיבוב</button>
+        <button id="btnZoomIn" aria-label="זום פנימה">➕</button>
+        <button id="btnZoomOut" aria-label="זום החוצה">➖</button>
+      </div>
+      <canvas id="canvas3d"></canvas>
+      <div id="loader3d">
+        <div class="spin"></div>
+        <div id="loadBarWrap"><div id="loadBar"></div></div>
+        <div id="loadPct">טוען מודל אנטומי…</div>
+      </div>
+      <div id="err3d">
+        <b>המודל התלת־ממדי לא נטען</b>
+        <span id="err3dMsg">נדרש חיבור לאינטרנט לטעינה ראשונה, ופתיחה דרך כתובת השרת (לא כקובץ מקומי).</span>
+      </div>
+      <div id="ctrlHint">גרירה: סיבוב · צביטה/גלגלת: זום · הקשה: כרטיס מבנה</div>
+      <svg id="calloutSvg" aria-hidden="true">
+        <circle id="calloutDotRing" r="4" opacity="0"></circle>
+        <circle id="calloutDot" r="4" opacity="0"></circle>
+        <path id="calloutLine" d=""></path>
+      </svg>
+      <div id="callout" dir="rtl" role="dialog" aria-label="פרטי מבנה">
+        <div class="cMeta"><span class="cChip cy" id="cType"></span><span class="cChip" id="cSide"></span></div>
+        <div class="cTitle" id="cName" dir="auto"></div>
+        <bdi class="cLat" id="cLat"></bdi>
+        <div class="cDesc" id="cDesc" dir="auto"></div>
+        <button class="cMore" id="cMore">כרטיס קליני מלא ←</button>
+      </div>
+    </div>
+    <p class="credit">מקור המודל: ‏<bdi><a href="https://anatomytool.org/open3dmodel" target="_blank" rel="noopener">Open 3D Model — LUMC, UMC Utrecht, MUMC, KU Leuven</a></bdi>‏ · רישיון ‏<bdi>CC BY-SA 4.0</bdi>‏ · מבוסס ‏<bdi>Z-Anatomy / BodyParts3D</bdi>‏.</p>
+  </section>
+
+  <!-- ============ ATLAS ============ -->
+  <section class="tab" id="tab-atlas">
+    <h2 class="sect"><span class="ic">💪</span> אטלס שרירים קליני</h2>
+    <input class="search" id="muscleSearch" type="search" placeholder="חיפוש שריר, פעולה, הקרנת כאב…">
+    <div class="filters" id="regionFilters"></div>
+    <div id="muscleList"></div>
+  </section>
+
+  <!-- ============ MOVEMENTS ============ -->
+  <section class="tab" id="tab-move">
+    <h2 class="sect"><span class="ic">🏃</span> תנועות תפקודיות וביומכניקה <button class="info-toggle" title="הסבר" aria-label="הסבר">ℹ️</button></h2>
+    <p class="hint">ניתוח קינזיולוגי של פעולות היום־יום: שלבי התנועה, המניעים הראשיים, הבולמים האקצנטריים, המייצבים ודפוסי הפיצוי.</p>
+    <div id="moveList"></div>
+  </section>
+
+  <!-- ============ PATHOLOGIES ============ -->
+  <section class="tab" id="tab-path">
+    <h2 class="sect"><span class="ic">🩺</span> פתולוגיות ותסמונות <button class="info-toggle" title="הסבר" aria-label="הסבר">ℹ️</button></h2>
+    <p class="hint">מנגנון, בדיקות אורתופדיות עם קריטריון חיובי, טיפול מנואלי, דגשי וינגייט ודגלים אדומים.</p>
+    <div id="pathList"></div>
+  </section>
+
+  <!-- ============ LEARN ============ -->
+  <section class="tab" id="tab-learn">
+    <h2 class="sect"><span class="ic">🎓</span> למידה ומבחנים</h2>
+    <div class="filters" id="learnMode">
+      <button class="fchip on" data-mode="cards">🃏 כרטיסיות</button>
+      <button class="fchip" data-mode="quiz">📝 מבחן קליני</button>
+    </div>
+
+    <div id="learnCards">
+      <div id="fcStage">
+        <div id="fcCard">
+          <div class="fcFace front">
+            <span class="chip" id="fcCat"></span>
+            <div class="cardTitle" id="fcTitle"></div>
+            <span class="lat" id="fcSub"></span>
+            <p style="font-size:13.5px;color:var(--dim);line-height:1.6" id="fcPrompt"></p>
+            <p style="font-size:11px;color:var(--dim2)">לחצי להיפוך הכרטיס</p>
+          </div>
+          <div class="fcFace back" id="fcBack"></div>
+        </div>
+      </div>
+      <div class="fcNav">
+        <button id="fcPrev">→ הקודם</button>
+        <span id="fcCount"></span>
+        <button id="fcNext">הבא ←</button>
+      </div>
+    </div>
+
+    <div id="learnQuiz" style="display:none">
+      <div class="card">
+        <span class="chip blue" id="quizTopic"></span>
+        <p style="font-size:14.5px;font-weight:700;line-height:1.65;margin-bottom:12px" id="quizQ"></p>
+        <div id="quizOpts"></div>
+        <div id="quizExpl"></div>
+        <div class="row" style="margin-top:12px;align-items:center">
+          <button class="primary" id="quizNext" style="display:none">השאלה הבאה ←</button>
+          <span style="font-size:12.5px;color:var(--dim)" id="quizScore"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CLINIC ============ -->
+  <section class="tab" id="tab-clinic">
+    <h2 class="sect"><span class="ic">📋</span> קליניקה — פרוטוקול ופנקס</h2>
+
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span class="chip" style="margin-bottom:0">בניית פרוטוקול טיפול · <bdi class="num">4</bdi> שלבים</span>
+        <button class="info-toggle" title="הסבר" aria-label="הסבר">ℹ️</button>
+      </div>
+      <p class="hint" style="margin-top:6px">הוסיפי פריטים לכל שלב — מהאטלס, מהפתולוגיות או טקסט חופשי. הפרוטוקול נשמר במכשיר וניתן להדפסה.</p>
+      <div class="addrow">
+        <select id="protoStage">
+          <option value="0">שלב 1 · שחרור מנואלי</option>
+          <option value="1">שלב 2 · מוביליזציה ומתיחות</option>
+          <option value="2">שלב 3 · בקרה מוטורית וחיזוק</option>
+          <option value="3">שלב 4 · ארגונומיה ומניעה</option>
+        </select>
+      </div>
+      <div class="addrow">
+        <input id="protoText" type="text" placeholder="לדוגמה: שחרור נקודות טריגר ב־QL, צד ימין">
+        <button class="primary" id="protoAdd" style="padding:9px 16px">הוסף</button>
+      </div>
+      <div id="protoStages"></div>
+      <div class="row">
+        <button class="ghost" id="protoPrint">🖨️ הדפסה / PDF</button>
+        <button class="ghost" id="protoClear">🗑️ ניקוי הכל</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span class="chip blue" style="margin-bottom:0">פנקס קליני אישי</span>
+        <button class="info-toggle" title="הסבר" aria-label="הסבר">ℹ️</button>
+      </div>
+      <p class="hint" style="margin-top:6px">הערות ממרצים, תובנות ממטופלים, דגשים למבחן — נשמר במכשיר.</p>
+      <textarea class="noteBox" id="noteInput" placeholder="כתבי הערה חדשה…"></textarea>
+      <div style="margin-top:8px"><button class="primary" id="noteSave">שמור הערה</button></div>
+      <div id="noteList" style="margin-top:12px"></div>
+    </div>
+  </section>
+
+</main>
+
+<nav id="tabbar">
+  <button data-tab="3d" class="on"><span class="ic">🧍</span>תלת־ממד</button>
+  <button data-tab="atlas"><span class="ic">💪</span>אטלס</button>
+  <button data-tab="move"><span class="ic">🏃</span>תנועות</button>
+  <button data-tab="path"><span class="ic">🩺</span>פתולוגיות</button>
+  <button data-tab="learn"><span class="ic">🎓</span>למידה</button>
+  <button data-tab="clinic"><span class="ic">📋</span>קליניקה</button>
+</nav>
+
+<div id="modal"><div id="modalBox">
+  <div class="grabber"></div>
+  <button id="modalClose">✕</button>
+  <div id="modalContent"></div>
+</div></div>
+
+<script>
+/* ================= CLINICAL DATABASE (V1 heritage — full) ================= */
+    // ==========================================
+    // CLINICAL DATASETS
+    // ==========================================
+    const MUSCLES = [
+  {
+  id: 'quadriceps',
+  name: 'הארבע-ראשי (<bdi>Quadriceps</bdi>)',
+  latin: 'Quadriceps Femoris (Rectus Femoris, VMO, VL, VI)',
+  region: 'knee_ankle',
+  regionName: 'ברך, שוק וכף רגל',
+  origin: '<bdi>AIIS</bdi> (רקטוס פמוריס); משטחים קדמיים ולטרליים של עצם הירך (<bdi>Vasti</bdi>)',
+  insertion: 'גבשושית השוקה (<bdi>Tibial Tuberosity</bdi>) דרך גיד הפיקה',
+  innervation: '<bdi>Femoral Nerve (L2–L4)</bdi>',
+  action: 'יישור מפרק הברך (<bdi>Extension</bdi>); הרקטוס פמוריס מסייע גם בכיפוף הירך',
+  functionalRole: 'השריר הקריטי ביותר בבלימה אקצנטרית בירידה במדרגות ובמדרון! ה־<bdi>VMO</bdi> אחראי למסלול תקין של הפיקה (<bdi>Patellar Tracking</bdi>).',
+  triggerPointReferral: 'מקרין לקדמת הברך, סביב הפיקה ולאורך השוק הקדמית; תחושת חולשה ו"בריחת ברך".',
+  palpationGuide: 'מישוש לאורך קדמת הירך; ה־<bdi>VMO</bdi> ממוקם ממש מעל הגבול המדיאלי של הפיקה בצורת דמעה.',
+  massageTechnique: 'עיסוי רקמות עמוק לאורך סיבי השריר ולרוחבם, שחרור רצועות תומכות הפיקה (<bdi>Retinaculum</bdi>), וחיכוך עמוק בגיד הרקטוס פמוריס.',
+  meshTag: 'quads'
+},
+  {
+  id: 'hamstrings',
+  name: 'המסטרינגס — שרירי מיתר הברך (<bdi>Hamstrings</bdi>)',
+  latin: 'Hamstrings (Biceps Femoris, Semitendinosus, Semimembranosus)',
+  region: 'knee_ankle',
+  regionName: 'ברך, שוק וכף רגל',
+  origin: 'גבשושית השת (<bdi>Ischial Tuberosity</bdi>)',
+  insertion: 'ראש השוקית (<bdi>Biceps Femoris</bdi>); רגל האווז (<bdi>Pes Anserinus</bdi>) ועצם השוקה (<bdi>Semi-T / Semi-M</bdi>)',
+  innervation: '<bdi>Sciatic Nerve (Tibial & Common Peroneal branches, L5–S2)</bdi>',
+  action: 'כיפוף מפרק הברך ופשיטת מפרק הירך',
+  functionalRole: 'בלימה אקצנטרית של הנפת השוק בריצה ובהליכה מהירה; תמיכה ביישור הגו בהרמת משאות מהרצפה (<bdi>Deadlift</bdi>).',
+  triggerPointReferral: 'כאב בעכוז התחתון, בירך האחורית ובגומץ בית הברך (<bdi>Popliteal Fossa</bdi>); הגבלת יישור ברך מלא.',
+  palpationGuide: 'שכיבה על הבטן; מישוש גופי השרירים לאורך החלק האחורי של הירך עד לגידים המדיאליים והלטרליים.',
+  massageTechnique: 'לישה עמוקה, שחרור נקודות מעוררות כאב (טריגר) לאורך מרכז הירך האחורית, מתיחה פסיבית תוך שמירה על גב ישר.',
+  meshTag: 'hamstrings'
+},
+  {
+  id: 'glute_med',
+  name: 'גלוטאוס מדיוס — שריר העכוז האמצעי (<bdi>Gluteus Medius</bdi>)',
+  latin: 'Gluteus Medius',
+  region: 'pelvis_hip',
+  regionName: 'אגן ומפרק הירך',
+  origin: 'משטח חיצוני של עצם הכסל (<bdi>Ilium</bdi>) בין הקווים הגלוטאליים',
+  insertion: 'משטח לטרלי של תל הירך הגדול (<bdi>Greater Trochanter</bdi>)',
+  innervation: '<bdi>Superior Gluteal Nerve (L4–S1)</bdi>',
+  action: 'הרחקת הירך (<bdi>Abduction</bdi>), סיבוב פנימי (סיבים קדמיים), וייצוב האגן במישור החזיתי',
+  functionalRole: 'המייצב הראשי של האגן בעמידה על רגל אחת, במדרגות ובהליכה! חולשתו גורמת לצניחת האגן הנגדי (<bdi>Trendelenburg Sign</bdi>) ולקריסת ברך פנימה (<bdi>Valgus</bdi>).',
+  triggerPointReferral: 'כאב עז לאורך רכס הכסל והעכוז, מקרין לירך הלטרלית והאחורית (מדמה כאב סיאטי), וכאב בירידה במדרגות.',
+  palpationGuide: 'מישוש עמוק מתחת לרכס הכסל הלטרלי ומעל תל הירך הגדול.',
+  massageTechnique: 'לחיצות איסכמיות ממוקדות בנקודות טריגר מרובות; עיסוי רקמות עמוק עם אגרוף או אמה בשכיבה על הצד.',
+  meshTag: 'glutes'
+},
+  {
+  id: 'glute_max',
+  name: 'גלוטאוס מקסימוס — שריר העכוז הגדול (<bdi>Gluteus Maximus</bdi>)',
+  latin: 'Gluteus Maximus',
+  region: 'pelvis_hip',
+  regionName: 'אגן ומפרק הירך',
+  origin: 'קו גלוטאלי אחורי של עצם הכסל (<bdi>Ilium</bdi>), משטח אחורי של עצם העצה (<bdi>Sacrum</bdi>) והרצועה הסקרו־טוברלית (<bdi>Sacrotuberous Ligament</bdi>)',
+  insertion: 'שביל הכסל והשוקה (רצועת ה־<bdi>ITB</bdi>) וגבשושית העכוז (<bdi>Gluteal Tuberosity</bdi>) בעצם הירך',
+  innervation: '<bdi>Inferior Gluteal Nerve (L5–S2)</bdi>',
+  action: 'פשיטה עוצמתית של הירך (<bdi>Hip Extension</bdi>) וסיבוב חיצוני',
+  functionalRole: 'מניע ראשי בעלייה במדרגות, בהרמת משאות כבדים ובריצה; ישיבה ממושכת גורמת לעיכובו ("שכחת עכוזים" / <bdi>Glute Amnesia</bdi>).',
+  triggerPointReferral: 'כאב באזור הישבן התחתון, הקרנה לקפל העכוז ולגב התחתון.',
+  palpationGuide: 'שריר עבה ורחב המכסה את רוב הישבן; קל לאיתור בכיפוף ופשיטת ירך כנגד התנגדות.',
+  massageTechnique: 'עיסוי לישה עמוק עם אמות ומרפקים, ושחרור אזור החיבור לשביל הכסל והשוקה (רצועת ה־<bdi>ITB</bdi>).',
+  meshTag: 'glutes'
+},
+  {
+  id: 'piriformis',
+  name: 'פירפורמיס — השריר האגסי (<bdi>Piriformis</bdi>)',
+  latin: 'Piriformis',
+  region: 'pelvis_hip',
+  regionName: 'אגן ומפרק הירך',
+  origin: 'משטח קדמי של עצם העצה (<bdi>Sacrum S2–S4</bdi>)',
+  insertion: 'גבול עליון של תל הירך הגדול (<bdi>Greater Trochanter</bdi>)',
+  innervation: '<bdi>Nerve to Piriformis (S1–S2)</bdi>',
+  action: 'סיבוב חיצוני של הירך; בכיפוף מעל <bdi class="num">60°–90°</bdi> פועל כמרחיק',
+  functionalRole: 'ייצוב ראש עצם הירך במרחשת האגן (<bdi>Acetabulum</bdi>); העצב הסיאטי עובר ישירות תחתיו. כיווץ יתר יוצר סיאטיקה מדומה.',
+  triggerPointReferral: 'כאב עמוק וצורב בעכוז, מקרין במורד הירך האחורית עד לשוק ולכף הרגל.',
+  palpationGuide: 'איתור קו דמיוני בין ה־<bdi>PSIS</bdi> לבין תל הירך הגדול; נקודת האמצע היא מרכז גוף השריר.',
+  massageTechnique: 'שחרור בלחיצה איסכמית ממושכת עם כרית האגודל או המרפק, ומתיחה במנח כיפוף, קירוב וסיבוב פנימי (<bdi>FAIR</bdi>).',
+  meshTag: 'glutes'
+},
+  {
+  id: 'trapezius_upper',
+  name: 'שריר הטרפז — סיבים עליונים (<bdi>Upper Trapezius</bdi>)',
+  latin: 'Upper Trapezius',
+  region: 'neck',
+  regionName: 'ראש וצוואר',
+  origin: 'בליטה עורפית חיצונית, רצועת העורף (<bdi>Ligamentum Nuchae</bdi>)',
+  insertion: 'שליש לטרלי של עצם הבריח (<bdi>Lateral Clavicle</bdi>)',
+  innervation: 'עצב הלוואי (<bdi>Cranial Nerve XI — Accessory</bdi>) וענפים צוואריים <bdi>C3–C4</bdi>',
+  action: 'הרמת השכמה (<bdi>Elevation</bdi>), הטיית הראש לאותו צד וסיבוב (רוטציה) לצד הנגדי',
+  functionalRole: 'מייצב חגורת הכתפיים בעת סחיבת סלים ומשאות; שותף לסיבוב עליון של השכמה בהרמת יד מעל הראש.',
+  triggerPointReferral: 'כאב עורפי־צווארי, מקרין לרקה (כאב ראש ממתח / <bdi>Tension Headache</bdi>) ומאחורי האוזן.',
+  palpationGuide: 'אחיזת צבת (<bdi>Pincer Grasp</bdi>) בגבול העליון של חגורת הכתפיים בין הצוואר לשיא הכתף (<bdi>Acromion</bdi>).',
+  massageTechnique: 'שחרור מיופציאלי אורכי ורוחבי, לחיצה איסכמית מתונה, ומתיחת צוואר תוך הטיה ורוטציה נגדית.',
+  meshTag: 'trapezius'
+},
+  {
+  id: 'levator_scapulae',
+  name: 'מרים השכמה (<bdi>Levator Scapulae</bdi>)',
+  latin: 'Levator Scapulae',
+  region: 'neck',
+  regionName: 'ראש וצוואר',
+  origin: 'זיזים רוחביים של חוליות צוואריות <bdi>C1–C4</bdi>',
+  insertion: 'זווית עליונה וגבול מדיאלי של השכמה (<bdi>Superior Angle of Scapula</bdi>)',
+  innervation: '<bdi>Dorsal Scapular Nerve (C5)</bdi> וענפים <bdi>C3–C4</bdi>',
+  action: 'הרמת השכמה וסיבובה כלפי מטה (<bdi>Downward Rotation</bdi>)',
+  functionalRole: 'מייצב כנגד צניחת כתף בסחיבת משאות כבדים; פעיל ביתר ביציבת ראש קדימה ("צוואר תפוס").',
+  triggerPointReferral: 'כאב ממוקד ועז בזווית העליונה של השכמה ובבסיס הצוואר, המגביל סיבוב ראש.',
+  palpationGuide: 'מישוש עמוק לאורך הגבול המדיאלי העליון של השכמה עד לאחז בזיזים הצוואריים.',
+  massageTechnique: 'לחיצות איסכמיות באחז העליון של השכמה, ועיסוי חיכוך רוחבי עמוק (<bdi>Cross-fiber Friction</bdi>).',
+  meshTag: 'neck'
+},
+  {
+  id: 'deltoid',
+  name: 'שריר הדלתא — דלתואיד (<bdi>Deltoid</bdi>)',
+  latin: 'Deltoid (Anterior, Middle, Posterior)',
+  region: 'shoulder',
+  regionName: 'כתף וחגורת כתפיים',
+  origin: 'שליש לטרלי של עצם הבריח (<bdi>Clavicle</bdi>), שיא הכתף (<bdi>Acromion</bdi>), וקוץ השכמה (<bdi>Spine of Scapula</bdi>)',
+  insertion: 'גבשושית הדלתא (<bdi>Deltoid Tuberosity</bdi>) בעצם הזרוע (<bdi>Humerus</bdi>)',
+  innervation: '<bdi>Axillary Nerve (C5–C6)</bdi>',
+  action: 'הרחקת הזרוע (סיבים אמצעיים), כיפוף וסיבוב פנימי (קדמיים), פשיטה וסיבוב חיצוני (אחוריים)',
+  functionalRole: 'מניע ראשי בהרחקת הזרוע מעבר ל־<bdi class="num">15°</bdi> ובכל תנועות הדחיפה והמשיכה.',
+  triggerPointReferral: 'כאב ממוקד בכתף הלטרלית והקדמית, המחמיר בעת הרמת היד.',
+  palpationGuide: 'שריר שטחי ועבה העוטף את ראש עצם הזרוע משלושה כיוונים.',
+  massageTechnique: 'עיסוי לישה עמוק, ושחרור מיופציאלי של הסיבים הקדמיים והאחוריים.',
+  meshTag: 'deltoid'
+},
+  {
+  id: 'supraspinatus',
+  name: 'סופראספינטוס — השריר הרום־קוצי (<bdi>Supraspinatus</bdi>)',
+  latin: 'Supraspinatus (Rotator Cuff)',
+  region: 'shoulder',
+  regionName: 'כתף וחגורת כתפיים',
+  origin: 'גומץ רום הקוץ בשכמה (<bdi>Supraspinous Fossa</bdi>)',
+  insertion: 'הגבשושית הגדולה של עצם הזרוע (<bdi>Greater Tubercle of Humerus</bdi>)',
+  innervation: '<bdi>Suprascapular Nerve (C5–C6)</bdi>',
+  action: 'ייזום הרחקת הזרוע (<bdi class="num">0°–15°</bdi>), ומרכוז ראש הזרוע בחלל הגלנואידי',
+  functionalRole: 'השריר הנפגע והנקרע ביותר בשרוול המסובב (<bdi>Rotator Cuff</bdi>) עקב צביטה תחת שיא הכתף (<bdi>Subacromial Impingement</bdi>).',
+  triggerPointReferral: 'כאב עמוק בכתף הלטרלית, מקרין במורד הזרוע עד לשורש כף היד.',
+  palpationGuide: 'מישוש בגומץ מעל קוץ השכמה עמוק לטרפז העליון; חשיפת הגיד מתבצעת בהבאת היד מאחורי הגב.',
+  massageTechnique: 'חיכוך רוחבי עמוק (<bdi>Cross Friction</bdi>) על הגיד, ושחרור נקודות טריגר בגוף השריר.',
+  meshTag: 'shoulder'
+},
+  {
+  id: 'infraspinatus',
+  name: 'אינפראספינטוס — השריר המך־קוצי (<bdi>Infraspinatus</bdi>)',
+  latin: 'Infraspinatus (Rotator Cuff)',
+  region: 'shoulder',
+  regionName: 'כתף וחגורת כתפיים',
+  origin: 'גומץ מך הקוץ בשכמה (<bdi>Infraspinous Fossa</bdi>)',
+  insertion: 'הגבשושית הגדולה של עצם הזרוע (<bdi>Greater Tubercle</bdi>)',
+  innervation: '<bdi>Suprascapular Nerve (C5–C6)</bdi>',
+  action: 'סיבוב חיצוני של הזרוע וייצוב דינמי של ראש הזרוע במפרק הכתף',
+  functionalRole: 'בלימה אקצנטרית של סיבוב פנימי מהיר; קריטי בהגעה לגב או למדף עליון.',
+  triggerPointReferral: 'כאב קדמי עמוק בכתף (מחקה פגיעה בגיד הדו־ראשי / <bdi>Biceps</bdi>), מקרין במורד הזרוע הקדמית עד לאצבעות.',
+  palpationGuide: 'מישוש ישיר על פני המשטח הרחב של השכמה מתחת לקוץ.',
+  massageTechnique: 'שחרור נקודות טריגר מרובות (שריר עמוס כרונית), ושחרור מיופציאלי אקטיבי בהנעה (<bdi>Active Release</bdi>).',
+  meshTag: 'shoulder'
+},
+  {
+  id: 'pectoralis_major',
+  name: 'שריר החזה הגדול — פקטורליס מייג׳ור (<bdi>Pectoralis Major</bdi>)',
+  latin: 'Pectoralis Major',
+  region: 'shoulder',
+  regionName: 'כתף וחגורת כתפיים',
+  origin: 'מחצית מדיאלית של עצם הבריח (<bdi>Clavicle</bdi>), עצם החזה (<bdi>Sternum</bdi>) וסחוסי הצלעות <bdi class="num">1–6</bdi>',
+  insertion: 'השפה הלטרלית של החריץ הבין־גושי בעצם הזרוע (<bdi>Intertubercular Sulcus of Humerus</bdi>)',
+  innervation: '<bdi>Medial & Lateral Pectoral Nerves (C5–T1)</bdi>',
+  action: 'קירוב אופקי של הזרוע (<bdi>Horizontal Adduction</bdi>), סיבוב פנימי וכיפוף',
+  functionalRole: 'מניע ראשי בתנועות דחיפה וחיבוק; קיצורו מושך את הכתפיים לפנים ("כתפיים שמוטות" / <bdi>Rounded Shoulders</bdi>).',
+  triggerPointReferral: 'כאב קדמי בחזה ובכתף, מקרין לאורך הזרוע המדיאלית עד לאצבעות <bdi class="num">4–5</bdi>.',
+  palpationGuide: 'אחיזת צבת עבה בגבול הקדמי של בית השחי.',
+  massageTechnique: 'שחרור מיופציאלי אורכי ורוחבי, ופתיחת בית החזה במתיחות פסיביות הדרגתיות.',
+  meshTag: 'chest'
+},
+  {
+  id: 'pectoralis_minor',
+  name: 'שריר החזה הקטן — פקטורליס מינור (<bdi>Pectoralis Minor</bdi>)',
+  latin: 'Pectoralis Minor',
+  region: 'shoulder',
+  regionName: 'כתף וחגורת כתפיים',
+  origin: 'משטחים חיצוניים של צלעות <bdi class="num">3, 4, 5</bdi>',
+  insertion: 'זיז החרטום של השכמה (<bdi>Coracoid Process</bdi>)',
+  innervation: '<bdi>Medial Pectoral Nerve (C8–T1)</bdi>',
+  action: 'הטיית השכמה לפנים ולמטה (<bdi>Anterior Tilt & Depression</bdi>)',
+  functionalRole: 'קיצורו עלול ללחוץ על מקלעת הזרוע (<bdi>Thoracic Outlet Syndrome — TOS</bdi>), לצמצם את המרווח התת־אקרומיאלי ולגרום לצביטה בכתף.',
+  triggerPointReferral: 'כאב קדמי בכתף ובחזה, מקרין במורד הזרוע המדיאלית (מדמה תעוקת חזה / אנגינה פקטוריס).',
+  palpationGuide: 'מישוש עמוק מתחת לפקטורליס מייג׳ור בסמוך לזיז החרטום (<bdi>Coracoid</bdi>).',
+  massageTechnique: 'שחרור רקמות עמוק תחת זיז החרטום, לחיצה איסכמית מבוקרת, ומתיחת בית חזה.',
+  meshTag: 'chest'
+},
+  {
+  id: 'serratus_anterior',
+  name: 'שריר המסור הקדמי — סראטוס אנטריור (<bdi>Serratus Anterior</bdi>)',
+  latin: 'Serratus Anterior',
+  region: 'shoulder',
+  regionName: 'כתף וחגורת כתפיים',
+  origin: 'משטחים חיצוניים של צלעות <bdi class="num">1–8</bdi>',
+  insertion: 'כל הגבול המדיאלי הקדמי של השכמה',
+  innervation: '<bdi>Long Thoracic Nerve (C5–C7)</bdi>',
+  action: 'קידום והרחקת השכמה (<bdi>Protraction</bdi>) וסיבובה כלפי מעלה (<bdi>Upward Rotation</bdi>)',
+  functionalRole: 'השריר החשוב ביותר להרמת יד תקינה מעל הראש ולמניעת שכמה מכונפת (<bdi>Winged Scapula</bdi>).',
+  triggerPointReferral: 'כאב בצדי החזה ובצלעות, מקרין לגב האמצעי ולאורך הזרוע המדיאלית עד לזרת.',
+  palpationGuide: 'מישוש לאורך קו הצלעות הלטרלי מתחת לבית השחי ומעל שרירי האלכסונים.',
+  massageTechnique: 'שחרור מיופציאלי על גבי הצלעות, ועידוד הרחקת השכמה תוך לחיצה עדינה.',
+  meshTag: 'torso'
+},
+  {
+  id: 'latissimus_dorsi',
+  name: 'שריר הרחב הגבי — לטיסימוס דורסי (<bdi>Latissimus Dorsi</bdi>)',
+  latin: 'Latissimus Dorsi',
+  region: 'spine_core',
+  regionName: 'גו, גב וליבה',
+  origin: 'זיזים קוציים <bdi>T7–L5</bdi>, פאציה תורקולומברית (<bdi>Thoracolumbar Fascia</bdi>), רכס הכסל ו־3 צלעות תחתונות',
+  insertion: 'רצפת החריץ הבין־גושי בעצם הזרוע (<bdi>Floor of Bicipital Groove</bdi>)',
+  innervation: '<bdi>Thoracodorsal Nerve (C6–C8)</bdi>',
+  action: 'פשיטה, קירוב וסיבוב פנימי של הזרוע; הורדת חגורת הכתפיים',
+  functionalRole: 'מייצב רב־עוצמה המחבר בין האגן, עמוד השדרה והזרוע; קריטי בהרמת משאות מהרצפה (גיוס הרחב הגבי וקיבוע השכמות).',
+  triggerPointReferral: 'כאב בגב האמצעי מתחת לזווית השכמה, מקרין לחלק האחורי של הכתף והזרוע.',
+  palpationGuide: 'אחיזת הקפל האחורי של בית השחי בין האגודל לאצבעות.',
+  massageTechnique: 'לישה עמוקה של שפת השריר בבית השחי, ומתיחה במנח כיפוף מלא והרחקת זרוע.',
+  meshTag: 'back'
+},
+  {
+  id: 'erector_spinae',
+  name: 'זוקפי הגב ושריר המולטיפידוס (<bdi>Erector Spinae & Multifidus</bdi>)',
+  latin: 'Erector Spinae & Multifidus',
+  region: 'spine_core',
+  regionName: 'גו, גב וליבה',
+  origin: 'עצם העצה (<bdi>Sacrum</bdi>), רכס הכסל, זיזים קוציים ורוחביים לאורך עמוד השדרה',
+  insertion: 'צלעות, זיזים רוחביים וקוציים עד לגולגולת',
+  innervation: '<bdi>Dorsal Rami of Spinal Nerves</bdi>',
+  action: 'פשיטת הגב (<bdi>Extension</bdi>), הטיה צדית ובקרה סגמנטלית עמוקה על חוליות עמוד השדרה',
+  functionalRole: 'בלימה אקצנטרית של כיפוף הגו לפנים בהרמת משא מהרצפה; ייצוב כנגד כוחות גזירה בחוליות המותניות.',
+  triggerPointReferral: 'כאב לאורך עמוד השדרה, מקרין לעכוז, למפרק העצה והכסל (מפרק ה־<bdi>SIJ</bdi>) ולאזור המפשעה.',
+  palpationGuide: 'מישוש לטרלית לזיזים הקוציים לכל אורך הגב.',
+  massageTechnique: 'עיסוי לאורך השרירים בשכיבה על הבטן, ולחיצות איסכמיות פארא־וורטברליות (לצד החוליות).',
+  meshTag: 'spine'
+},
+  {
+  id: 'quadratus_lumborum',
+  name: 'השריר המרובע המותני — קוואדרטוס לומבורום (<bdi>Quadratus Lumborum / QL</bdi>)',
+  latin: 'Quadratus Lumborum (QL)',
+  region: 'spine_core',
+  regionName: 'גו, גב וליבה',
+  origin: 'רכס הכסל (<bdi>Iliac Crest</bdi>) והרצועה האיליולומברית (<bdi>Iliolumbar Ligament</bdi>)',
+  insertion: 'צלע 12 וזיזים רוחביים של חוליות <bdi>L1–L4</bdi>',
+  innervation: '<bdi>T12, L1–L4</bdi>',
+  action: 'הטיית עמוד השדרה המותני לאותו צד, הרמת האגן (<bdi>Hip Hiking</bdi>), וייצוב צלע 12',
+  functionalRole: 'מייצב ליבה ראשי נגד קריסה צדית בעת נשיאת משא חד־צדדי (סחיבת סל או משא ביד אחת).',
+  triggerPointReferral: 'כאב עמוק ונוקשה בגב התחתון, מקרין לרכס הכסל, לאזור העכוז העליון ולמפשעה.',
+  palpationGuide: 'מישוש מצדו הלטרלי של הגב בין צלע 12 לרכס הכסל, עמוק לשרירי הזוקפים.',
+  massageTechnique: 'לחיצות איסכמיות עמוקות בשכיבה על הצד עם כרית מתחת למותן (לפתיחת המרווח), ושחרור מיופציאלי.',
+  meshTag: 'spine'
+},
+  {
+  id: 'iliopsoas',
+  name: 'שריר המותן והכסל — איליופסואס (<bdi>Iliopsoas</bdi>)',
+  latin: 'Iliopsoas (Psoas Major & Iliacus)',
+  region: 'pelvis_hip',
+  regionName: 'אגן ומפרק הירך',
+  origin: 'גופי חוליות ודיסקים בין־חולייתיים <bdi>T12–L5</bdi> (פסואס); גומץ הכסל הפנימי (<bdi>Iliac Fossa</bdi> — איליאקוס)',
+  insertion: 'תל הירך הקטן (<bdi>Lesser Trochanter of Femur</bdi>)',
+  innervation: '<bdi>Femoral Nerve & Lumbar Plexus (L1–L3)</bdi>',
+  action: 'כיפוף חזק של הירך (<bdi>Hip Flexion</bdi>) והטיית האגן לפנים (<bdi>Anterior Pelvic Tilt</bdi>)',
+  functionalRole: 'שריר מפתח בקימה מישיבה ובהנפת רגל במדרגות; ישיבה ממושכת גורמת לקיצורו ולעיכוב שריר העכוז הגדול.',
+  triggerPointReferral: 'כאב אנכי עמוק לאורך עמוד השדרה המותני ("קושי להזדקף במעבר מישיבה לעמידה"), מקרין למפשעה.',
+  palpationGuide: 'שכיבה על הגב עם ברכיים כפופות; שקיעת אצבעות עדינה ומבוקרת לטרלית לטבור תוך נשיפות המטופל.',
+  massageTechnique: 'שחרור עמוק ומבוקר, הנעת כיפוף ויישור פסיבית תוך לחיצה ממוקדת (<bdi>Pin & Stretch</bdi>).',
+  meshTag: 'pelvis'
+},
+  {
+  id: 'forearm_extensors',
+  name: 'שרירי האמה הפושטים — אקסטנסורים (<bdi>Forearm Extensors</bdi>)',
+  latin: 'Forearm Extensors (ECRL, ECRB, ED)',
+  region: 'arm_hand',
+  regionName: 'זרוע, אמה וכף יד',
+  origin: 'עִלִּית העלי הלטרלית של עצם הזרוע (<bdi>Lateral Epicondyle of Humerus</bdi>)',
+  insertion: 'בסיסי עצמות המסרק והגלילים של גב כף היד',
+  innervation: '<bdi>Radial Nerve (C6–C8)</bdi>',
+  action: 'פשיטת שורש כף היד והאצבעות (<bdi>Wrist & Finger Extension</bdi>)',
+  functionalRole: 'ייצוב שורש כף היד בעת לפיתה ואחיזת חפצים (סחיבת סלים); עומס יתר מוביל למרפק טניס.',
+  triggerPointReferral: 'כאב עז במרפק הלטרלי, מקרין לאורך גב האמה עד לגב שורש כף היד והאצבעות.',
+  palpationGuide: 'מישוש <bdi class="num">2–3</bdi> ס"מ דיסטלית לאפיקונדיל הלטרלי בעת פשיטת שורש כף היד כנגד התנגדות.',
+  massageTechnique: 'שחרור רקמות עמוק לאורך סיבי השריר, ועיסוי חיכוך רוחבי עמוק (<bdi>Cross-fiber Friction</bdi>) על הגיד המשותף.',
+  meshTag: 'arm'
+},
+  {
+  id: 'forearm_flexors',
+  name: 'שרירי האמה המכופפים והשריר הכפן העגול (<bdi>Forearm Flexors & Pronator Teres</bdi>)',
+  latin: 'Forearm Flexors & Pronator Teres (FCR, FCU, FDS, PT)',
+  region: 'arm_hand',
+  regionName: 'זרוע, אמה וכף יד',
+  origin: 'עִלִּית העלי המדיאלית של עצם הזרוע (<bdi>Medial Epicondyle of Humerus</bdi>)',
+  insertion: 'עצמות שורש כף היד, מסרקים וגלילים בצד הכפי',
+  innervation: '<bdi>Median & Ulnar Nerves (C6–T1)</bdi>',
+  action: 'כיפוף שורש כף היד, כיפוף האצבעות והפניית האמה מטה (<bdi>Pronation</bdi>)',
+  functionalRole: 'לפיתה עוצמתית בעת סחיבת סלים ומשאות; מעורבים בתסמונת התעלה הקרפלית ובמרפק גולף.',
+  triggerPointReferral: 'כאב בצד המדיאלי של המרפק, מקרין לאורך פנים האמה עד לכף היד והאצבעות.',
+  palpationGuide: 'מישוש בחלק הקדמי־מדיאלי של האמה מתחת לאפיקונדיל המדיאלי.',
+  massageTechnique: 'שחרור מיופציאלי לשרירי האמה, ושחרור ממוקד של שריר ה־<bdi>Pronator Teres</bdi> לפתיחת מעבר העצב המדיאני.',
+  meshTag: 'arm'
+},
+  {
+  id: 'gastrocnemius_soleus',
+  name: 'שרירי הסובך האחוריים — גסטרוקנמיוס וסולאוס (<bdi>Triceps Surae</bdi>)',
+  latin: 'Triceps Surae (Gastrocnemius & Soleus)',
+  region: 'knee_ankle',
+  regionName: 'ברך, שוק וכף רגל',
+  origin: 'עלי הירך המדיאלי והלטרלי (גסטרוקנמיוס); משטח אחורי של עצם השוקה ועצם השוקית (סולאוס)',
+  insertion: 'עצם העקב (<bdi>Calcaneus</bdi>) דרך גיד אכילס (<bdi>Achilles Tendon</bdi>)',
+  innervation: '<bdi>Tibial Nerve (S1–S2)</bdi>',
+  action: 'כפיפה כפית (<bdi>Plantarflexion</bdi>) של הקרסול; הגסטרוקנמיוס מסייע גם בכיפוף הברך',
+  functionalRole: 'הסולאוס שולט אקצנטרית על גלישת השוק לפנים בירידה במדרגות; הגסטרוקנמיוס מייצר דחיפה (<bdi>Push-off</bdi>). קיצורם מגביר עומס על הפאציה הפלנטרית ("דורבן").',
+  triggerPointReferral: 'הקרנת כאב לקשת כף הרגל, לעקב האחורי, ולשקע שמאחורי הברך (התכווצויות שרירים ליליות).',
+  palpationGuide: 'מישוש בשכיבה על הבטן; תפיסת שתי הבטנים של הגסטרוקנמיוס ושכבת הסולאוס העמוקה מתחתיו.',
+  massageTechnique: 'עיסוי סחיטה עמוק לאורך השוק, ולחיצות איסכמיות על נקודות טריגר בבטן המדיאלית של הגסטרוקנמיוס.',
+  meshTag: 'calves'
+},
+  {
+  id: 'tibialis_anterior',
+  name: 'שריר השוקה הקדמי — טיביאליס אנטריור (<bdi>Tibialis Anterior</bdi>)',
+  latin: 'Tibialis Anterior',
+  region: 'knee_ankle',
+  regionName: 'ברך, שוק וכף רגל',
+  origin: 'שני השלישים העליונים של המשטח הלטרלי בעצם השוקה (<bdi>Tibia</bdi>)',
+  insertion: 'עצם הטריז המדיאלית (<bdi>Medial Cuneiform</bdi>) ובסיס עצם המסרק הראשונה (<bdi>1st Metatarsal</bdi>)',
+  innervation: '<bdi>Deep Peroneal Nerve (L4–L5)</bdi>',
+  action: 'כפיפה גבית של כף הרגל (<bdi>Dorsiflexion</bdi>) והפנייתה פנימה (<bdi>Inversion</bdi>)',
+  functionalRole: 'בלימה אקצנטרית של הנחת כף הרגל בנגיעת העקב (<bdi>Heel Strike</bdi>) ומניעת צניחת כף הרגל במדרגות; עומס יתר גורם לתסמונת שברי המאמץ בשוק ("שין ספלינטס" / <bdi>MTSS</bdi>).',
+  triggerPointReferral: 'כאב בקדמת הקרסול ובמשטח הדורסלי של הבוהן הגדולה.',
+  palpationGuide: 'מישוש לטרלית ישירות לרכס הקדמי של עצם השוקה (<bdi>Anterior Border of Tibia</bdi>).',
+  massageTechnique: 'עיסוי אורכי עמוק בעזרת אגודלים לאורך השוקה, ושחרור מיופציאלי במנח כפיפה כפית ("פוינט" / <bdi>Plantarflexion</bdi>).',
+  meshTag: 'shins'
+}
+];
+
+const FUNCTIONAL_MOVEMENTS = [
+  {
+  id: 'f_stairs',
+  title: 'ירידה במדרגות ובמדרון תלול',
+  latin: 'Descending Stairs & Controlled Lowering',
+  category: 'גפה תחתונה ובלימה אקצנטרית',
+  icon: '🪜',
+  summary: 'תנועה תפקודית מאתגרת הדורשת בלימה אקצנטרית עוצמתית של הירך והקרסול, לצד ייצוב אגן חד־צדדי במישור החזיתי.',
+  phases: [
+    { name: 'קבלת עומס והנמכה מבוקרת', desc: 'הרגל העומדת כופפת את הברך ומבצעת כפיפה גבית בקרסול באיטיות תחת מלוא משקל הגוף כדי להוריד את הרגל הנגדית.' },
+    { name: 'בלימה סופית ומגע', desc: 'ספיגת הזעזוע ברגל התחתונה תוך שמירה על יציבות מרכז כובד הגוף ומניעת קריסה פנימה.' }
+  ],
+  primeMovers: '<bdi>Quadriceps (Vastus Medialis, Lateralis, Rectus Femoris)</bdi> — עבודה אקצנטרית טהורה!',
+  eccentricDecelerators: '<bdi>Soleus & Gastrocnemius</bdi> (שליטה אקצנטרית על כפיפה גבית / <bdi>Dorsiflexion</bdi> של הקרסול).',
+  stabilizers: '<bdi>Gluteus Medius & Minimus</bdi> (מניעת צניחת אגן נגדית — <bdi>Trendelenburg</bdi>), שרירי הליבה ו־<bdi>QL</bdi>.',
+  commonCompensation: 'קריסת ברך פנימה (<bdi>Dynamic Knee Valgus</bdi>), רכינת גו מוגזמת לפנים ונחיתה רועשת עקב חוסר שליטה אקצנטרית.',
+  tightMuscles: '<bdi>TFL</bdi> / שביל הכסל והשוקה (רצועת <bdi>ITB</bdi>), <bdi>Gastrocnemius</bdi>, שרירי הקירוב (<bdi>Adductors</bdi>).',
+  weakMuscles: '<bdi>Vastus Medialis Oblique (VMO)</bdi>, <bdi>Gluteus Medius</bdi>, <bdi>Soleus</bdi>.',
+  manualCue: 'שחרור נקודות טריגר ב־<bdi>Vastus Lateralis</bdi> וב־<bdi>TFL</bdi>, שחרור סולאוס, וחיזוק אקצנטרי של הארבע-ראשי (תרגילי <bdi>Step-down</bdi>).'
+},
+  {
+  id: 'f_carrying',
+  title: 'סחיבת סלים ומשאות (משא אסימטרי)',
+  latin: 'Carrying Asymmetric / Bilateral Loads',
+  category: 'גו, חגורת כתפיים ואחיזה',
+  icon: '🛍️',
+  summary: 'נשיאת משאות יוצרת מומנט פיתול והטיה צדית של עמוד השדרה, הדורשת כיווץ אנטי־לטרלי של הליבה וייצוב חגורת הכתפיים כנגד צניחה.',
+  phases: [
+    { name: 'לפיתה והרמה', desc: 'אחיזה חזקה בעזרת שרירי האמה והאצבעות והרמת המשא מהמשטח.' },
+    { name: 'נשיאה דינמית בהליכה', desc: 'שמירה על גו זקוף, מניעת הטיית הגב לעבר המשא, ובלימת זעזועים בכל צעד.' }
+  ],
+  primeMovers: '<bdi>Forearm Flexors & Extensors</bdi> (שמירה על לפיתה חזקה ויציבה של שורש כף היד).',
+  eccentricDecelerators: '<bdi>Upper Trapezius & Levator Scapulae</bdi> (בלימת משיכת הכתף מטה על ידי כוח הכובד).',
+  stabilizers: '<bdi>Quadratus Lumborum (QL)</bdi> בצד הנגדי למשא, שרירי הבטן האלכסונים (<bdi>Obliques</bdi>), ו־<bdi>Gluteus Medius</bdi> בצד הנושא.',
+  commonCompensation: 'הטיית הגו הצדה בצורה חדה (<bdi>Lateral Trunk Shift</bdi>), והרמת כתף מוגזמת (<bdi>Shoulder Hiking</bdi>) עם כיווץ יתר צווארי.',
+  tightMuscles: '<bdi>Levator Scapulae</bdi>, <bdi>Upper Trapezius</bdi>, <bdi>QL</bdi> בצד הנגדי, <bdi>Pectoralis Minor</bdi>.',
+  weakMuscles: '<bdi>Lower Trapezius</bdi>, <bdi>Serratus Anterior</bdi>, <bdi>Gluteus Medius</bdi>, שרירי הבטן האלכסונים.',
+  manualCue: 'שחרור נקודות טריגר ממוקדות ב־<bdi>Levator Scapulae</bdi> וב־<bdi>QL</bdi> הנגדי, לצד תרגילי נשיאת משא חד־צדדית (<bdi>Suitcase Carry</bdi>).'
+},
+  {
+  id: 'f_lifting',
+  title: 'הרמת משא מהרצפה (ציר ירך / סקוואט)',
+  latin: 'Ground Lifting & Hip Hinge Mechanics',
+  category: 'שרשרת אחורית וליבה',
+  icon: '📦',
+  summary: 'העברת עומס דרך השרשרת האחורית מהקרקע אל הגו, הדורשת שמירה על עמוד שדרה ניטרלי ושימוש בעוצמת שרירי הירך והעכוז.',
+  phases: [
+    { name: 'התמקמות וציר ירך', desc: 'שליחת הישבן לאחור עם כיפוף קל בברכיים ושמירה על גב ישר ומוארך.' },
+    { name: 'דחיפה ויישור', desc: 'דחיפת הקרקע בעזרת העקבים ופשיטת ירכיים וברכיים עד לעמידה זקופה מלאה.' }
+  ],
+  primeMovers: '<bdi>Gluteus Maximus, Hamstrings, Quadriceps</bdi>.',
+  eccentricDecelerators: '<bdi>Erector Spinae & Multifidus</bdi> (בלימה איזומטרית קריטית של מומנט הכפיפה המותני).',
+  stabilizers: 'הרחב הבטני (<bdi>Transversus Abdominis</bdi> — יצירת לחץ תוך־בטני), והרחב הגבי (<bdi>Latissimus Dorsi</bdi> — קיבוע השכמות למניעת כיפוף גבי).',
+  commonCompensation: 'כיפוף עמוד שדרה מותני ("גב עגול" / <bdi>Round Back</bdi>), ניתוק מוקדם של הברכיים לפני פשיטת הירך, ופשיטת יתר צווארית למעלה.',
+  tightMuscles: '<bdi>Hamstrings, Iliopsoas, Gastrocnemius</bdi>.',
+  weakMuscles: '<bdi>Gluteus Maximus, Multifidus, Transversus Abdominis</bdi>.',
+  manualCue: 'שחרור מיופציאלי לזוקפי הגב המותניים ולהמסטרינגס, והדרכה לנשימה סרעפתית וקיבוע שכמות לפני הרמה.'
+},
+  {
+  id: 'f_overhead',
+  title: 'הושטת יד למדף עליון / תנועה מעל הראש',
+  latin: 'Overhead Reaching & Scapulohumeral Rhythm',
+  category: 'חגורת כתפיים וגפה עליונה',
+  icon: '🙋',
+  summary: 'תנועה מורכבת המבוססת על הקצב הסקפולו־הומורלי (יחס <bdi class="num" dir="ltr">2:1</bdi>) הדורשת מרווח תת־אקרומיאלי חופשי ומניעת צביטה.',
+  phases: [
+    { name: 'ייזום הרחקה (<bdi class="num" dir="ltr">0°–30°</bdi>)', desc: 'מרכוז ראש הזרוע על ידי הסופראספינטוס ותחילת תנועת שריר הדלתא.' },
+    { name: 'סיבוב עליון של השכמה (<bdi class="num" dir="ltr">30°–180°</bdi>)', desc: 'צמד כוחות בין הסראטוס לטרפז המסובב את השכמה ומפנה מקום לראש הזרוע תחת האקרומיון.' }
+  ],
+  primeMovers: '<bdi>Anterior & Middle Deltoid, Supraspinatus, Serratus Anterior</bdi>.',
+  eccentricDecelerators: '<bdi>Latissimus Dorsi & Pectoralis Major</bdi> (בלימת תנועה ומניעת פריקה).',
+  stabilizers: 'שרוול המסובבים (<bdi>Rotator Cuff: Infraspinatus, Teres Minor, Subscapularis</bdi> — שיקוע ראש הזרוע כלפי מטה).',
+  commonCompensation: 'הרמת חגורת הכתפיים כולה (<bdi>Shoulder Hiking</bdi>), ופשיטת יתר של עמוד השדרה המותני כפיצוי על חוסר פשיטה גבית.',
+  tightMuscles: '<bdi>Pectoralis Minor, Levator Scapulae, Latissimus Dorsi</bdi>.',
+  weakMuscles: '<bdi>Serratus Anterior, Lower Trapezius, Infraspinatus</bdi>.',
+  manualCue: 'שחרור פקטורליס מינור ואינפראספינטוס, מוביליזציה למפרק הכתף, ותרגול פשיטה בעמוד שדרה גבי.'
+},
+  {
+  id: 'f_sit_stand',
+  title: 'קימה מישיבה וישיבה ממושכת',
+  latin: 'Sit-to-Stand Transition',
+  category: 'אגן, ירך וגפה תחתונה',
+  icon: '🪑',
+  summary: 'מעבר ממרכז כובד נמוך לבסיס תמיכה צר, המציף נוקשות במכופפי הירך (פסואס) וחולשת עכוזים עקב ישיבה ממושכת.',
+  phases: [
+    { name: 'הטיית גו קדימה', desc: 'העברת מרכז הכובד מעל כפות הרגליים בעזרת כיפוף מבוקר של הירכיים.' },
+    { name: 'דחיפה ויישור מלא', desc: 'הפעלת הארבע-ראשי והעכוז הגדול ליישור מלא של הברכיים והאגן.' }
+  ],
+  primeMovers: '<bdi>Gluteus Maximus, Quadriceps, Hamstrings</bdi>.',
+  eccentricDecelerators: '<bdi>Tibialis Anterior</bdi> (שליטה בהטיית השוק לפנים).',
+  stabilizers: 'שרירי הליבה (<bdi>Core</bdi>), <bdi>Soleus</bdi>, ומקרבי ומרחיקי הירך.',
+  commonCompensation: 'דחיפה מסיבית בעזרת הידיים מהכיסא, קריסת ברכיים פנימה, וחוסר יכולת להזדקף מיד עם המעבר לעמידה.',
+  tightMuscles: '<bdi>Iliopsoas, Rectus Femoris, Hamstrings</bdi>.',
+  weakMuscles: '<bdi>Gluteus Maximus, Gluteus Medius</bdi>, שרירי הליבה.',
+  manualCue: 'שחרור מיופציאלי לאיליופסואס ולקוואדס, והפעלה ממוקדת של גלוטאוס מקסימוס (תרגיל גשר אגן) לפני קימה.'
+}
+];
+
+const PATHOLOGIES = [
+  {
+  id: 'cts',
+  name: 'תסמונת התעלה הקרפלית',
+  latin: 'Carpal Tunnel Syndrome (CTS)',
+  region: 'arm_hand',
+  mechanism: 'לחץ ודחיסה על העצב המדיאני במעברו בתעלה הקרפלית מתחת לרצועה הרוחבית (<bdi>Flexor Retinaculum</bdi>). תסמינים של נימול, ירידה בתחושה וכאב באצבעות <bdi class="num">1–3.5</bdi>.',
+  involvedMuscles: '<bdi>Pronator Teres, Flexor Digitorum Superficialis/Profundus, Opponens Pollicis</bdi>.',
+  tests: [
+    { name: "Phalen's Test", how: 'הצמדת גב כפות הידיים בכיפוף של <bdi class="num">90°</bdi> למשך <bdi class="num">60</bdi> שניות.', positive: 'הופעת נימול או החמרת כאב באצבעות <bdi class="num">1–3.5</bdi>.' },
+    { name: "Tinel's Sign (Wrist)", how: 'ניקוש קל מעל התעלה הקרפלית בשורש כף היד.', positive: 'תחושת זרם חשמלי או נימול לאורך נתיב העצב המדיאני.' },
+    { name: "Durkan's Compression Test", how: 'לחיצה ישירה של אגודלי הבודק מעל התעלה למשך <bdi class="num">30</bdi> שניות.', positive: 'שחזור מהיר של תסמיני ההירדמות (בדיקה בעלת רגישות מרבית).' }
+  ],
+  manualTherapy: 'שחרור מיופציאלי לשרירי האמה המכופפים (<bdi>Flexors</bdi>), שחרור נקודות טריגר ב־<bdi>Pronator Teres</bdi>, ומתיחה עדינה של הפלקסור רטינקולום.',
+  massageFocus: 'דגש וינגייט: להימנע מלחיצה אגרסיבית ישירות לתוך התעלה המודלקת! יש לשחרר את כל נתיב העצב לאורך הצוואר, בית החזה והאמה.',
+  rehabExercises: 'החלקת העצב המדיאני (<bdi>Median Nerve Gliding</bdi>), מתיחות פסיביות עדינות לשורש כף היד, וסד לילה במנח ניטרלי.',
+  redFlags: 'דלדול שרירי כרית האגודל (<bdi>Thenar Atrophy</bdi>), אובדן תחושה קבוע, ואובדן מוחלט של כוח הלפיתה.'
+},
+  {
+  id: 'impingement',
+  name: 'צביטה בכתף ותסמונת השרוול המסובב',
+  latin: 'Subacromial Impingement Syndrome (SAIS)',
+  region: 'shoulder',
+  mechanism: 'דחיסה וחיכוך של גיד הסופראספינטוס והאמתחת התת־אקרומיאלית (<bdi>Subacromial Bursa</bdi>) בין ראש עצם הזרוע לקשת האקרומיון בטווח של <bdi class="num">60°–120°</bdi> הרחקה ("קשת מכאיבה" / <bdi>Painful Arc</bdi>).',
+  involvedMuscles: '<bdi>Supraspinatus, Infraspinatus, Pectoralis Minor, Serratus Anterior, Trapezius</bdi>.',
+  tests: [
+    { name: "Hawkins-Kennedy Test", how: 'כיפוף כתף ומרפק ל־<bdi class="num">90°</bdi> וביצוע סיבוב פנימי כפוי מהיר.', positive: 'כאב חד בקדמת הכתף ובצדיה.' },
+    { name: "Neer's Test", how: 'הרמה פסיבית מלאה של הזרוע לפנים בסיבוב פנימי תוך קיבוע השכמה.', positive: 'שחזור כאב בסוף הטווח מול שיא הכתף (<bdi>Acromion</bdi>).' },
+    { name: "Empty Can (Jobe's) Test", how: 'הרחקת היד ב־<bdi class="num">90°</bdi> במישור השכמה עם אגודל מטה כנגד התנגדות.', positive: 'כאב או חולשה משמעותית בשריר הסופראספינטוס.' }
+  ],
+  manualTherapy: 'עיסוי רקמות עמוק לשרוול המסובב (אינפראספינטוס וטרס מינור), ושחרור מיופציאלי של <bdi>Pectoralis Minor</bdi> לפתיחת המרווח.',
+  massageFocus: 'שחרור שרירי השכמה המקובעים כדי לאפשר סיבוב עליון תקין של השכמה בהרמת יד.',
+  rehabExercises: 'תרגילי מטוטלת (<bdi>Codman</bdi>), חיזוק שריר המסור הקדמי (<bdi>Push-up Plus</bdi>), וחיזוק מסובבים חיצוניים.',
+  redFlags: 'חוסר יכולת אקטיבית מוחלטת להרים את היד (מבחן <bdi>Drop Arm</bdi> חיובי מלא — חשד לקרע מלא בגיד), חום מקומי ואודם עז.'
+},
+  {
+  id: 'piriformis_syn',
+  name: 'תסמונת הפירפורמיס וסיאטיקה מדומה',
+  latin: 'Piriformis Syndrome (Deep Gluteal Syndrome)',
+  region: 'pelvis_hip',
+  mechanism: 'שריר הפירפורמיס המקוצר או המעובה לוחץ על העצב הסיאטי במעברו בנקב העכוז הגדול (<bdi>Greater Sciatic Foramen</bdi>). גורם לכאב עכוז עמוק המקרין לרגל ומחקה פריצת דיסק מותנית.',
+  involvedMuscles: '<bdi>Piriformis, Gluteus Medius, Gluteus Maximus, Obturators</bdi>.',
+  tests: [
+    { name: "FAIR Test", how: 'שכיבה על הצד, כיפוף ירך ל־<bdi class="num">60°</bdi>, קירוב וסיבוב פנימי עמוק.', positive: 'שחזור כאב עכוזי עמוק והקרנה לאורך נתיב העצב הסיאטי.' },
+    { name: "Beatty's Test", how: 'שכיבה על הצד הבריא, הרמת הברך הפגועה מעל המיטה בהחזקה איזומטרית.', positive: 'כאב עמוק בעכוז בצד הפגוע.' },
+    { name: "Straight Leg Raise (SLR)", how: 'הרמת רגל ישרה פסיבית בשכיבה על הגב (לשלילת פריצת דיסק מותנית).', positive: 'בתסמונת פירפורמיס הבדיקה לרוב שלילית או כואבת רק בקצה הטווח ממתיחת שריר.' }
+  ],
+  manualTherapy: 'לחץ איסכמי הדרגתי עמוק ישירות על גוף שריר הפירפורמיס, ושחרור נקודות טריגר סביב תל הירך הגדול ועצם העצה.',
+  massageFocus: 'דגש וינגייט: שחרור שריר הגלוטאוס מדיוס הנלווה המפצה על חוסר יציבות באגן.',
+  rehabExercises: 'מתיחת פירפורמיס מתונה (תנוחת "4"), חיזוק מייצבי אגן (<bdi>Gluteus Medius</bdi>), והימנעות מישיבה על ארנק בכיס האחורי!',
+  redFlags: 'תסמונת זנב הסוס (<bdi>Cauda Equina Syndrome</bdi> — אובדן שליטה על סוגרים, חוסר תחושה/הירדמות באזור האוכף והמפשעה), צניחת כף רגל פתאומית (<bdi>Foot Drop</bdi>).'
+},
+  {
+  id: 'plantar_fascia',
+  name: 'פלנטר פאציאיטיס ודורבן העקב',
+  latin: 'Plantar Fasciitis / Fasciosis',
+  region: 'knee_ankle',
+  mechanism: 'מיקרו־קרעים ושינויים ניווניים באחז הפאציה הפלנטרית בעצם העקב (<bdi>Calcaneus</bdi>). כאב עז בצעדים הראשונים בבוקר לאחר מנוחה.',
+  involvedMuscles: '<bdi>Gastrocnemius, Soleus, Tibialis Posterior, Flexor Digitorum Brevis</bdi>.',
+  tests: [
+    { name: "Windlass Test", how: 'פשיטה כפויה מלאה של הבוהן הגדולה בעמידה ובשכיבה.', positive: 'מתיחת הפאציה ושחזור הכאב המוכר בעקב.' },
+    { name: "Calcaneal Squeeze Test", how: 'לחיצה דו־צדדית של העקב משני צדיו (לשלילת שבר מאמץ).', positive: 'כאב חד בלחיצה רוחבית מעלה חשד לשבר מאמץ בעצם העקב.' }
+  ],
+  manualTherapy: 'עיסוי רקמות עמוק לשרירי השוק האחוריים (סולאוס וגסטרוקנמיוס להורדת מתח מגיד אכילס), ושחרור מיופציאלי ישיר לרצועת כף הרגל.',
+  massageFocus: 'שילוב עיסוי עמוק עם מתיחת הבוהן לאחור לחשיפת הפאציה, ועבודה לאורך כל השרשרת האחורית.',
+  rehabExercises: 'פרוטוקול עומס אקצנטרי מבוקר לקרסול (<bdi>Rathleff Protocol</bdi>), וגלגול בקבוק קרח או כדור עיסוי קשיח תחת כף הרגל.',
+  redFlags: 'כאב לילה המעיר משינה ללא תלות בדריכה, נפיחות מקומית חמה ועזה (חשד לזיהום או גידול).'
+},
+  {
+  id: 'itb_syn',
+  name: 'תסמונת שביל הכסל והשוקה — ITB ("ברך רצים")',
+  latin: 'Iliotibial Band Syndrome (ITBS)',
+  region: 'knee_ankle',
+  mechanism: 'חיכוך ועומס יתר של החלק הדיסטלי של שביל הכסל והשוקה (<bdi>ITB</bdi>) מעל עלי הירך הלטרלי בכיפוף ברך של כ־<bdi class="num">30°</bdi> (אופייני בירידה במדרגות ובריצה).',
+  involvedMuscles: '<bdi>Tensor Fasciae Latae (TFL), Gluteus Maximus, Gluteus Medius, Vastus Lateralis</bdi>.',
+  tests: [
+    { name: "Ober's Test", how: 'שכיבה על הצד הבריא, כיפוף ברך, הרחקה ופשיטת ירך, וניסיון להוריד את הרגל מטה.', positive: 'הרגל נשארת תלויה באוויר עקב קיצור נוקשה של ה־<bdi>TFL / ITB</bdi>.' },
+    { name: "Noble's Compression Test", how: 'לחיצה על ה־<bdi>Lateral Epicondyle</bdi> בעת יישור וכיפוף הברך מ־<bdi class="num">90°</bdi> ל־<bdi class="num">0°</bdi>.', positive: 'כאב חד ומוכר ב־<bdi class="num">30°</bdi> כיפוף.' }
+  ],
+  manualTherapy: 'עיסוי רקמות עמוק לשריר ה־<bdi>TFL</bdi> ולאזור העכוז העליון, ושחרור מיופציאלי של <bdi>Vastus Lateralis</bdi>.',
+  massageFocus: 'דגש וינגייט קריטי: להימנע מעיסוי אגרסיבי ישירות על האזור המודלק מעל עלי הירך! יש לשחרר את השרירים המותחים את הרצועה (<bdi>TFL</bdi> וגלוטאוס).',
+  rehabExercises: 'חיזוק מרחיקי ירך (תרגילי <bdi>Clamshells</bdi> עם גומייה), ותרגילי שליטה אקצנטרית בברך למניעת קריסת ואלגוס.',
+  redFlags: 'נעילה של מפרק הברך, ותפליט תוך־מפרקי משמעותי (חשד לקרע במניסקוס או ברצועה צולבת).'
+},
+  {
+  id: 'tennis_elbow',
+  name: 'מרפק טניס — דלקת בגיד הפושט המשותף',
+  latin: 'Lateral Epicondylalgia (Tennis Elbow)',
+  region: 'arm_hand',
+  mechanism: 'עומס מתיחה חוזר ומיקרו־טראומה במוצא המשותף של שרירי האמה הפושטים (במיוחד <bdi>ECRB</bdi>) בעִלִּית העלי הלטרלית.',
+  involvedMuscles: '<bdi>Extensor Carpi Radialis Brevis (ECRB), Extensor Digitorum, Supinator</bdi>.',
+  tests: [
+    { name: "Cozen's Test", how: 'פשיטת שורש כף היד עם סטייה רדיאלית ואגרוף קמוץ כנגד התנגדות הבודק.', positive: 'כאב פתאומי ועז בעִלִּית העלי הלטרלית.' },
+    { name: "Mill's Test", how: 'יישור מלא של המרפק, כיפוף מלא של שורש כף היד והאצבעות ופרונציה מלאה.', positive: 'מתיחה חדה ושחזור הכאב במרפק החיצוני.' }
+  ],
+  manualTherapy: 'עיסוי חיכוך רוחבי עמוק (<bdi>Cyriax Cross Friction</bdi>) על נקודת המוצא המשותפת, ושחרור מיופציאלי לשרירי האמה הפושטים.',
+  massageFocus: 'בדיקת עמוד שדרה צווארי (<bdi>C6–C7</bdi>) לשלילת הקרנה עצבית נלווית.',
+  rehabExercises: 'תרגיל <bdi>Tyler Twist</bdi> בעזרת מוט גמיש, ותרגול אקצנטרי לפושטים עם משקולת קלה.',
+  redFlags: 'צניחת שורש כף היד (<bdi>Radial Nerve Palsy</bdi>), וחוסר יכולת ליישר את המרפק לחלוטין.'
+}
+];
+
+const FLASHCARDS = [
+  {
+  category: 'אנטומיה ועצבוב',
+  frontTitle: 'Upper Trapezius (טרפז עליון)',
+  frontSubtitle: 'Innervation & Action',
+  frontPrompt: 'מהו העצבוב, הפעולה האנטומית, ותפקידו בעת סחיבת סלים?',
+  backDetails: [
+    { label: 'עצבוב', value: 'עצב הלוואי (<bdi>CN XI — Accessory</bdi>) וענפים צוואריים <bdi>C3–C4</bdi>' },
+    { label: 'פעולה מבודדת', value: 'הרמת שכמה, הטיית צוואר לאותו צד וסיבוב לצד הנגדי' },
+    { label: 'תפקיד בסחיבת סלים', value: 'בלימה איזומטרית של משיכת הכתף מטה תחת עומס' },
+    { label: 'הקרנת כאב אופיינית', value: 'כאב ראש ממתח (<bdi>Tension Headache</bdi>) לרקה ומאחורי האוזן' }
+  ]
+},
+  {
+  category: 'תנועות תפקודיות',
+  frontTitle: 'ירידה במדרגות',
+  frontSubtitle: 'Eccentric Muscle Action',
+  frontPrompt: 'אילו שרירים מבצעים בלימה אקצנטרית בירידה במדרגות, ומהו הפיצוי השכיח?',
+  backDetails: [
+    { label: 'בולם ראשי (ירך)', value: '<bdi>Quadriceps</bdi> (ובמיוחד <bdi>Vastus Medialis / VMO</bdi>)' },
+    { label: 'בולם משני (קרסול)', value: '<bdi>Soleus & Gastrocnemius</bdi> (שליטה על כפיפה גבית)' },
+    { label: 'מייצב אגן', value: '<bdi>Gluteus Medius</bdi> (מניעת צניחת אגן נגדית — <bdi>Trendelenburg</bdi>)' },
+    { label: 'דפוס פיצוי שכיח', value: 'קריסת ברך פנימה (<bdi>Valgus</bdi>) ורכינת גו חדה לפנים' }
+  ]
+},
+  {
+  category: 'בדיקות אורתופדיות',
+  frontTitle: "Hawkins-Kennedy Test",
+  frontSubtitle: 'Shoulder Special Test',
+  frontPrompt: 'כיצד מבוצעת הבדיקה ומה היא בודקת?',
+  backDetails: [
+    { label: 'אופן ביצוע', value: 'כיפוף כתף ומרפק ל־<bdi class="num">90°</bdi> וביצוע סיבוב פנימי כפוי מהיר' },
+    { label: 'מבנה נבדק', value: 'צביטה של גיד הסופראספינטוס והאמתחת התת־אקרומיאלית' },
+    { label: 'סימן חיובי', value: 'כאב חד בקדמת הכתף ובצדיה' },
+    { label: 'דגש טיפולי', value: 'שחרור פקטורליס מינור ואינפראספינטוס, וחיזוק שריר המסור הקדמי' }
+  ]
+},
+  {
+  category: 'פתולוגיות ותסמונות',
+  frontTitle: 'תסמונת התעלה הקרפלית',
+  frontSubtitle: 'Carpal Tunnel Syndrome',
+  frontPrompt: 'איזה עצב נלחץ, אילו אצבעות מושפעות ומהי בדיקת הבחירה?',
+  backDetails: [
+    { label: 'עצב נלחץ', value: 'העצב המדיאני (<bdi>Median Nerve</bdi>)' },
+    { label: 'פיזור תחושתי', value: 'אגודל, אצבע מורה, אמה ומחצית הקמיצה (אצבעות <bdi class="num">1–3.5</bdi>)' },
+    { label: 'בדיקות קליניות', value: "<bdi>Phalen's Test, Tinel's Sign, Durkan's Compression</bdi>" },
+    { label: 'דגש עיסוי רפואי', value: 'שחרור שרירי האמה המכופפים ו־<bdi>Pronator Teres</bdi> (לא ללחוץ לתוך התעלה!)' }
+  ]
+},
+  {
+  category: 'קינזיולוגיה קלינית',
+  frontTitle: 'Gluteus Medius & Trendelenburg',
+  frontSubtitle: 'Pelvic Stability',
+  frontPrompt: 'מדוע חולשת עכוז אמצעי ברגל ימין גורמת לצניחת האגן השמאלי?',
+  backDetails: [
+    { label: 'מנגנון ביומכני', value: 'בעמידה על רגל אחת, הגלוטאוס מדיוס של הרגל העומדת מושך את האגן מטה בצד שלו ובכך מרים את האגן הנגדי באוויר' },
+    { label: 'סימן קליני', value: 'חולשה בימין ← צניחת אגן שמאל (סימן <bdi>Trendelenburg</bdi> חיובי)' },
+    { label: 'השלכה במדרגות', value: 'קריסת ברך, חוסר יציבות וכאב פטלו־פמורלי' },
+    { label: 'דגש טיפולי', value: 'שחרור נקודות טריגר בגלוטאוס מדיוס וחיזוק בשרשרת תנועה סגורה' }
+  ]
+}
+];
+
+const QUIZ_QUESTIONS = [
+  {
+  topic: 'ביומכניקה ותנועה תפקודית',
+  question: 'מטופלת מתלוננת על כאב חד בקדמת הברך הימנית אך ורק בעת ירידה במדרגות. מהו המנגנון השרירי העיקרי שפועל בירידה במדרגות ונכשל במקרה זה?',
+  options: [
+    'כיווץ קונצנטרי של שרירי ההמסטרינגס ליישור הברך.',
+    'בלימה אקצנטרית של שריר הארבע-ראשי (ובמיוחד <bdi>Vastus Medialis / VMO</bdi>) לבקרת כיפוף הברך.',
+    'כיווץ איזומטרי של שריר השוקה הקדמי (<bdi>Tibialis Anterior</bdi>) להרמת הבוהן.',
+    'פעולה קונצנטרית של הגסטרוקנמיוס לדחיפת המדרגה.'
+  ],
+  correct: 1,
+  explanation: 'ירידה במדרגות דורשת עבודה אקצנטרית מסיבית של הארבע-ראשי לבלימת משקל הגוף. חולשה או חוסר תיאום ב־<bdi>VMO</bdi> גורמים למסלול פיקה לקוי ולכאב פטלו־פמורלי עז.'
+},
+  {
+  topic: 'אנטומיה ועצבוב (וינגייט)',
+  question: 'איזה עצב מעצבב את שריר ה־<bdi>Upper Trapezius</bdi>, ומהי פעולתו הייחודית בעת הרמת היד מעל הראש?',
+  options: [
+    'העצב האקסילרי (<bdi>Axillary Nerve</bdi>); מבצע רוטציה פנימית של הזרוע.',
+    'עצב הלוואי (<bdi>Cranial Nerve XI — Accessory</bdi>); שותף לצמד כוחות לסיבוב עליון של השכמה.',
+    'העצב הרדיאלי (<bdi>Radial Nerve</bdi>); מבצע פשיטה בשורש כף היד.',
+    'העצב המוסקולוקוטנאי (<bdi>Musculocutaneous Nerve</bdi>); מכופף את המרפק.'
+  ],
+  correct: 1,
+  explanation: 'הטרפז מעוצבב על ידי עצב הלוואי (<bdi>CN XI</bdi>) וענפים צוואריים. יחד עם הטרפז התחתון ושריר המסור הקדמי הוא יוצר סיבוב עליון (<bdi>Upward Rotation</bdi>) של השכמה הדרוש להרמת היד מעל <bdi class="num">90°</bdi>.'
+},
+  {
+  topic: 'עיסוי רפואי ונקודות טריגר',
+  question: 'בבדיקת מטופל עם תסמונת התעלה הקרפלית (<bdi>CTS</bdi>), מהו הדגש החשוב ביותר בעת ביצוע עיסוי רפואי מנואלי?',
+  options: [
+    'לבצע לחיצה איסכמית עמוקה וכוחנית ישירות במרכז התעלה הקרפלית.',
+    'לעסות רק את כף הרגל כטיפול רפלקסולוגי בלבד.',
+    'לשחרר מיופציאלית את שרירי האמה המכופפים ואת שריר ה־<bdi>Pronator Teres</bdi>, ולהימנע מדחיסה ישירה על התעלה המודלקת.',
+    'לבצע מתיחה חדה ומהירה של שורש כף היד לאחור.'
+  ],
+  correct: 2,
+  explanation: 'דחיסה ישירה של התעלה הקרפלית המודלקת תחמיר את הלחץ על העצב המדיאני. הטיפול הנכון כולל שחרור שרירי האמה המכופפים, שחרור ה־<bdi>Pronator Teres</bdi>, ומתיחות עדינות.'
+},
+  {
+  topic: 'אבחון מבדל ואורתופדיה',
+  question: 'מטופל מגיע עם כאב עכוזי עמוק המקרין לאורך הרגל האחורית בישיבה ממושכת. בדיקת <bdi>SLR</bdi> שלילית אך בדיקת <bdi>FAIR</bdi> חיובית ביותר. מהי האבחנה הסבירה ביותר?',
+  options: [
+    'פריצת דיסק מותנית עם לחץ שורשי חריף <bdi>L5–S1</bdi>.',
+    'תסמונת הפירפורמיס (<bdi>Piriformis Syndrome / Pseudo-Sciatica</bdi>).',
+    'דלקת בפאציה הפלנטרית / דורבן בעקב (<bdi>Plantar Fasciitis</bdi>).',
+    'קרע מלא בגיד הארבע-ראשי.'
+  ],
+  correct: 1,
+  explanation: 'בדיקת <bdi>FAIR (Flexion, Adduction, Internal Rotation)</bdi> מותחת ישירות את שריר הפירפורמיס ולוחצת על העצב הסיאטי. מבחן <bdi>SLR</bdi> שלילי שולל לרוב פריצת דיסק דינמית, מה שמכוון לתסמונת הפירפורמיס.'
+},
+  {
+  topic: 'ניתוח תנועה תפקודית',
+  question: 'בעת נשיאת שקית קניות כבדה ביד ימין בלבד (משא אסימטרי), איזה שריר פועל באופן קריטי בצד שמאל של הגב למניעת קריסת עמוד השדרה?',
+  options: [
+    'שריר ה־<bdi>Quadratus Lumborum (QL)</bdi> השמאלי בכיווץ אנטי־לטרלי.',
+    'שריר ה־<bdi>Quadratus Lumborum</bdi> הימני בהרפיה מלאה.',
+    'שריר הזרוע הדו־ראשי (<bdi>Biceps</bdi>) הימני בלבד.',
+    'שריר השוקה האחורי (<bdi>Tibialis Posterior</bdi>) השמאלי.'
+  ],
+  correct: 0,
+  explanation: 'סחיבת משא חד־צדדי מייצרת מומנט כפיפה צדית לעבר המשא. שריר ה־<bdi>QL</bdi> ושרירי הבטן האלכסונים בצד הנגדי (שמאל) חייבים להתכווץ בחוזקה כדי לשמור על עמוד שדרה זקוף וניטרלי.'
+}
+];
+
+
+
+/* ================= APP ENGINE (V2 — built from scratch) ================= */
+(function(){
+"use strict";
+const $ = (s)=>document.querySelector(s);
+const $$ = (s)=>document.querySelectorAll(s);
+const esc = (s)=>String(s==null?"":s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* ---------- tabs ---------- */
+$$("#tabbar button").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    $$("#tabbar button").forEach(x=>x.classList.remove("on"));
+    $$("section.tab").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on");
+    $("#tab-"+b.dataset.tab).classList.add("on");
+    window.scrollTo({top:0});
+    if(b.dataset.tab==="3d") window.__pcResize && window.__pcResize();
+  });
+});
+window.__openTab = (t)=>{ const btn=document.querySelector(`#tabbar button[data-tab="${t}"]`); if(btn) btn.click(); };
+
+/* ---------- modal ---------- */
+const modal=$("#modal"), modalContent=$("#modalContent");
+function openModal(html){ modalContent.innerHTML=html; modal.classList.add("show"); }
+function closeModal(){ modal.classList.remove("show"); window.__pcClearSel && window.__pcClearSel(); }
+$("#modalClose").addEventListener("click",closeModal);
+modal.addEventListener("click",e=>{ if(e.target===modal) closeModal(); });
+window.__openMuscle = (id)=>{
+  const m = MUSCLES.find(x=>x.id===id);
+  if(m) openModal(muscleDetailHTML(m));
+};
+
+/* glossary sheet for a tapped 3D structure: full clinical card when mapped, glossary entry otherwise */
+window.__openGlossary = (info)=>{
+  const badge = `<span class="chip blue" style="margin-bottom:8px">${info.typeStr}</span><span class="structBadge">${info.side}</span>`;
+  const m = info.muscleId ? MUSCLES.find(x=>x.id===info.muscleId) : null;
+  if(m){
+    openModal(badge + `<div style="height:4px"></div>` + muscleDetailHTML(m) +
+      `<p style="font-size:11.5px;color:var(--dim2);margin-top:10px">מבנה שנבחר במודל: <bdi>${esc(info.latin)}</bdi></p>`);
+  }else{
+    openModal(badge + `
+      <h3 style="font-size:18px;font-weight:800;margin:4px 0 2px">${esc(info.latin)}</h3>
+      <span class="lat" style="margin-bottom:10px"><bdi>${esc(info.latin)}</bdi></span>
+      ${drow("סוג מבנה", info.typeStr)}
+      ${drow("צד", info.side)}
+      ${drow("תיאור", info.desc)}
+      <p style="font-size:12px;color:var(--dim2);margin-top:12px;line-height:1.6">מבנה מתוך המודל האנטומי ‏<bdi>Open3DModel</bdi>‏. שרירים המסומנים באטלס הקליני נפתחים עם כרטיס טיפולי מלא.</p>`);
+  }
+};
+
+/* short brief for the 3D leader-line callout: Hebrew name + one clinical line */
+window.__muscleBrief = (id)=>{
+  const m = MUSCLES.find(x=>x.id===id);
+  return m ? { name: m.name, brief: m.functionalRole || m.action || "" } : null;
+};
+
+/* ---------- ATLAS ---------- */
+const regions = [...new Map(MUSCLES.map(m=>[m.region,m.regionName])).entries()];
+let regionSel="all", searchQ="";
+const rf=$("#regionFilters");
+rf.innerHTML = `<button class="fchip on" data-r="all">הכל (${MUSCLES.length})</button>` +
+  regions.map(([r,n])=>`<button class="fchip" data-r="${r}">${esc(n)}</button>`).join("");
+rf.addEventListener("click",e=>{
+  const b=e.target.closest(".fchip"); if(!b) return;
+  rf.querySelectorAll(".fchip").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on"); regionSel=b.dataset.r; renderMuscles();
+});
+$("#muscleSearch").addEventListener("input",e=>{ searchQ=e.target.value.trim().toLowerCase(); renderMuscles(); });
+
+function muscleCardHTML(m){
+  return `<div class="card click" tabindex="0" role="button" data-mid="${m.id}">
+    <span class="chip">${esc(m.regionName)}</span>
+    <div class="cardTitle" dir="auto">${m.name}</div>
+    <span class="lat"><bdi>${esc(m.latin)}</bdi></span>
+    <p style="font-size:12.5px;color:var(--dim);margin-top:7px;line-height:1.6" dir="auto">${m.functionalRole}</p>
+  </div>`;
+}
+function drow(lbl,val){ return val?`<div class="drow"><div class="lbl">${lbl}</div><div class="val" dir="auto">${val}</div></div>`:""; }
+function muscleDetailHTML(m){
+  return `<span class="chip">${esc(m.regionName)}</span>
+    <h3 style="font-size:18px;font-weight:800;margin-bottom:2px">${m.name}</h3>
+    <span class="lat" style="margin-bottom:10px"><bdi>${esc(m.latin)}</bdi></span>
+    ${drow("תחל (Origin)",m.origin)}
+    ${drow("אחז (Insertion)",m.insertion)}
+    ${drow("עצבוב (Innervation)",m.innervation)}
+    ${drow("פעולה מבודדת",m.action)}
+    ${drow("תפקיד תנועתי־תפקודי",m.functionalRole)}
+    ${drow("הקרנת כאב מנקודות הדק",m.triggerPointReferral)}
+    ${drow("מדריך מישוש (Palpation)",m.palpationGuide)}
+    ${drow("טכניקת עיסוי (וינגייט)",m.massageTechnique)}
+    <div class="row" style="margin-top:14px">
+      <button class="primary" onclick="__addToProto('${m.id}')">➕ הוסף לפרוטוקול</button>
+    </div>`;
+}
+function renderMuscles(){
+  const list=MUSCLES.filter(m=>{
+    if(regionSel!=="all" && m.region!==regionSel) return false;
+    if(!searchQ) return true;
+    return [m.name,m.latin,m.action,m.functionalRole,m.triggerPointReferral].join(" ").toLowerCase().includes(searchQ);
+  });
+  $("#muscleList").innerHTML = list.length? list.map(muscleCardHTML).join("") : `<div class="empty">לא נמצאו שרירים תואמים.</div>`;
+}
+$("#muscleList").addEventListener("click",e=>{
+  const c=e.target.closest("[data-mid]"); if(c) window.__openMuscle(c.dataset.mid);
+});
+$("#muscleList").addEventListener("keydown",e=>{
+  if(e.key==="Enter"||e.key===" "){ const c=e.target.closest("[data-mid]"); if(c){e.preventDefault(); window.__openMuscle(c.dataset.mid);} }
+});
+renderMuscles();
+
+/* ---------- MOVEMENTS ---------- */
+$("#moveList").innerHTML = FUNCTIONAL_MOVEMENTS.map(f=>`
+  <div class="card">
+    <span class="chip blue">${esc(f.category)}</span>
+    <div class="cardTitle">${f.icon||""} ${f.title}</div>
+    <span class="lat"><bdi>${esc(f.latin)}</bdi></span>
+    <p style="font-size:13px;color:var(--dim);margin:8px 0;line-height:1.65">${f.summary}</p>
+    <div class="drow"><div class="lbl">שלבי התנועה</div><div class="val">${
+      f.phases.map((p,i)=>`<b style="color:var(--acc)">${i+1}. ${p.name}</b> — ${p.desc}`).join("<br>")
+    }</div></div>
+    ${drow("מניעים ראשיים (Prime Movers)",f.primeMovers)}
+    ${drow("בולמים אקצנטריים",f.eccentricDecelerators)}
+    ${drow("מייצבים",f.stabilizers)}
+    ${drow("דפוס פיצוי שכיח",f.commonCompensation)}
+    ${drow("שרירים נוטים לקיצור",f.tightMuscles)}
+    ${drow("שרירים נוטים לחולשה",f.weakMuscles)}
+    ${drow("דגש טיפולי־מנואלי",f.manualCue)}
+  </div>`).join("");
+
+/* ---------- PATHOLOGIES ---------- */
+$("#pathList").innerHTML = PATHOLOGIES.map(p=>`
+  <div class="card">
+    <span class="chip red">תסמונת</span>
+    <div class="cardTitle">${p.name}</div>
+    <span class="lat"><bdi>${esc(p.latin)}</bdi></span>
+    ${drow("מנגנון הפגיעה",p.mechanism)}
+    ${drow("שרירים מעורבים",p.involvedMuscles)}
+    <div class="drow"><div class="lbl">בדיקות אורתופדיות</div><div class="val">${
+      p.tests.map(t=>`<b style="color:var(--blue)"><bdi>${t.name}</bdi></b> — ${t.how}<br><span style="color:var(--acc)">חיובי:</span> ${t.positive}`).join("<br><br>")
+    }</div></div>
+    ${drow("טיפול מנואלי",p.manualTherapy)}
+    ${drow("דגש וינגייט (עיסוי רפואי)",p.massageFocus)}
+    ${drow("תרגילי שיקום",p.rehabExercises)}
+    <div class="redflag"><div class="lbl">🚩 דגלים אדומים — הפניה לרופא</div><div class="val">${p.redFlags}</div></div>
+  </div>`).join("");
+
+/* ---------- FLASHCARDS ---------- */
+let fcIdx=0, fcFlip=false;
+const fcCard=$("#fcCard");
+function renderFC(){
+  const c=FLASHCARDS[fcIdx];
+  fcCard.classList.remove("flip"); fcFlip=false;
+  $("#fcCat").textContent=c.category;
+  $("#fcTitle").innerHTML=c.frontTitle;
+  $("#fcSub").innerHTML=`<bdi>${esc(c.frontSubtitle)}</bdi>`;
+  $("#fcPrompt").innerHTML=c.frontPrompt;
+  $("#fcBack").innerHTML = `<span class="chip" style="align-self:flex-start">${esc(c.category)}</span>` +
+    c.backDetails.map(d=>`<div class="drow"><div class="lbl">${d.label}</div><div class="val">${d.value}</div></div>`).join("");
+  $("#fcCount").innerHTML = `<bdi class="num">${fcIdx+1}</bdi> / <bdi class="num">${FLASHCARDS.length}</bdi>`;
+}
+fcCard.addEventListener("click",()=>{ fcFlip=!fcFlip; fcCard.classList.toggle("flip",fcFlip); });
+$("#fcNext").addEventListener("click",()=>{ fcIdx=(fcIdx+1)%FLASHCARDS.length; renderFC(); });
+$("#fcPrev").addEventListener("click",()=>{ fcIdx=(fcIdx-1+FLASHCARDS.length)%FLASHCARDS.length; renderFC(); });
+renderFC();
+
+/* ---------- learn mode switch ---------- */
+$("#learnMode").addEventListener("click",e=>{
+  const b=e.target.closest(".fchip"); if(!b) return;
+  $("#learnMode").querySelectorAll(".fchip").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on");
+  $("#learnCards").style.display = b.dataset.mode==="cards"?"block":"none";
+  $("#learnQuiz").style.display = b.dataset.mode==="quiz"?"block":"none";
+});
+
+/* ---------- QUIZ ---------- */
+let qIdx=0, qScore=0, qAnswered=false;
+function renderQuiz(){
+  const q=QUIZ_QUESTIONS[qIdx]; qAnswered=false;
+  $("#quizTopic").textContent=q.topic;
+  $("#quizQ").innerHTML=q.question;
+  $("#quizExpl").classList.remove("show");
+  $("#quizNext").style.display="none";
+  $("#quizScore").innerHTML = `ניקוד: <bdi class="num">${qScore}/${QUIZ_QUESTIONS.length}</bdi> · שאלה <bdi class="num">${qIdx+1}/${QUIZ_QUESTIONS.length}</bdi>`;
+  $("#quizOpts").innerHTML = q.options.map((o,i)=>`<button class="qopt" data-i="${i}">${o}</button>`).join("");
+}
+$("#quizOpts").addEventListener("click",e=>{
+  const b=e.target.closest(".qopt"); if(!b||qAnswered) return;
+  qAnswered=true;
+  const q=QUIZ_QUESTIONS[qIdx], i=+b.dataset.i;
+  $$("#quizOpts .qopt").forEach((x,xi)=>{
+    x.disabled=true;
+    if(xi===q.correct) x.classList.add("correct");
+    else if(xi===i) x.classList.add("wrong");
+  });
+  if(i===q.correct) qScore++;
+  const ex=$("#quizExpl");
+  ex.innerHTML = `<b style="color:${i===q.correct?"var(--acc)":"var(--warn)"}">${i===q.correct?"✔ נכון!":"✘ לא מדויק."}</b> ${q.explanation}`;
+  ex.classList.add("show");
+  $("#quizNext").style.display="inline-block";
+  $("#quizScore").innerHTML = `ניקוד: <bdi class="num">${qScore}/${QUIZ_QUESTIONS.length}</bdi> · שאלה <bdi class="num">${qIdx+1}/${QUIZ_QUESTIONS.length}</bdi>`;
+});
+$("#quizNext").addEventListener("click",()=>{
+  qIdx=(qIdx+1)%QUIZ_QUESTIONS.length;
+  if(qIdx===0) qScore=0;
+  renderQuiz();
+});
+renderQuiz();
+
+/* ---------- PROTOCOL ---------- */
+const STAGES=["שלב 1 · שחרור מנואלי","שלב 2 · מוביליזציה ומתיחות","שלב 3 · בקרה מוטורית וחיזוק","שלב 4 · ארגונומיה ומניעה"];
+let proto = JSON.parse(localStorage.getItem("pc2_proto")||"[[],[],[],[]]");
+function saveProto(){ localStorage.setItem("pc2_proto", JSON.stringify(proto)); }
+function renderProto(){
+  $("#protoStages").innerHTML = STAGES.map((s,si)=>`
+    <div class="stage"><h4>${s}</h4>${
+      proto[si].length? proto[si].map((it,ii)=>`<div class="pitem"><span>${esc(it)}</span><button data-s="${si}" data-i="${ii}" aria-label="הסר">✕</button></div>`).join("")
+      : `<div style="font-size:12px;color:var(--dim2);padding:4px 0 8px">— ריק —</div>`
+    }</div>`).join("");
+}
+$("#protoStages").addEventListener("click",e=>{
+  const b=e.target.closest("button[data-s]"); if(!b) return;
+  proto[+b.dataset.s].splice(+b.dataset.i,1); saveProto(); renderProto();
+});
+$("#protoAdd").addEventListener("click",()=>{
+  const t=$("#protoText").value.trim(); if(!t) return;
+  proto[+$("#protoStage").value].push(t); $("#protoText").value=""; saveProto(); renderProto();
+});
+$("#protoText").addEventListener("keydown",e=>{ if(e.key==="Enter") $("#protoAdd").click(); });
+$("#protoPrint").addEventListener("click",()=>window.print());
+$("#protoClear").addEventListener("click",()=>{ if(confirm("לנקות את כל הפרוטוקול?")){ proto=[[],[],[],[]]; saveProto(); renderProto(); } });
+window.__addToProto=(mid)=>{
+  const m=MUSCLES.find(x=>x.id===mid); if(!m) return;
+  proto[0].push("שחרור מנואלי: "+m.name);
+  saveProto(); renderProto();
+  modal.classList.remove("show");
+  window.__openTab("clinic");
+};
+renderProto();
+
+/* ---------- NOTES ---------- */
+let notes = JSON.parse(localStorage.getItem("pc2_notes")||"[]");
+function renderNotes(){
+  $("#noteList").innerHTML = notes.length? notes.map((n,i)=>`
+    <div class="card noteCard"><button class="del" data-i="${i}" aria-label="מחק">✕</button>
+      <div style="font-size:13.5px;line-height:1.65;white-space:pre-wrap">${esc(n.t)}</div>
+      <div class="noteDate">${esc(n.d)}</div>
+    </div>`).join("") : `<div class="empty">אין הערות עדיין.</div>`;
+}
+$("#noteSave").addEventListener("click",()=>{
+  const t=$("#noteInput").value.trim(); if(!t) return;
+  notes.unshift({t, d:new Date().toLocaleString("he-IL")});
+  localStorage.setItem("pc2_notes",JSON.stringify(notes));
+  $("#noteInput").value=""; renderNotes();
+});
+$("#noteList").addEventListener("click",e=>{
+  const b=e.target.closest(".del"); if(!b) return;
+  notes.splice(+b.dataset.i,1); localStorage.setItem("pc2_notes",JSON.stringify(notes)); renderNotes();
+});
+renderNotes();
+
+/* ---------- SECTION HINTS DISCLOSURE ---------- */
+document.querySelectorAll(".info-toggle").forEach(btn => {
+  btn.addEventListener("click", e => {
+    e.stopPropagation();
+    const parent = btn.closest(".sect, .card");
+    let hint = null;
+    if (parent) {
+      if (parent.classList.contains("card")) {
+        hint = parent.querySelector(".hint");
+      } else {
+        hint = parent.nextElementSibling;
+        while (hint && !hint.classList.contains("hint")) {
+          hint = hint.nextElementSibling;
+        }
+      }
+    }
+    if (hint) {
+      hint.classList.toggle("show");
+      btn.classList.toggle("on", hint.classList.contains("show"));
+    }
+  });
+});
+})();
+</script>
+
+<!-- ================= 3D ANATOMICAL ENGINE (Three.js + real anatomy GLB) ================= -->
+<script type="importmap">
+{ "imports": {
+  "three": "./physiocore_assets/vendor/three.module.js",
+  "three/addons/": "./physiocore_assets/vendor/addons/"
+} }
+</script>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
+
+/* All files share one anatomical body-space (same source body, Y-up, midline at x=0, right side at -x).
+   upper-limb + lower-limb carry the muscles/vessels/ligaments; overview-skeleton adds the skull & head
+   (the Open3DModel project publishes no head-muscle GLB — the skeleton file is the head source). */
+const BODY_FILES = ["physiocore_assets/lower-limb.glb", "physiocore_assets/upper-limb.glb", "physiocore_assets/overview-skeleton.glb"];
+
+/* map GLB structure names (lowercase substrings) -> clinical muscle ids */
+const MESH_MAP = [
+  ["quadriceps", ["vastus","rectus femoris","quadriceps"]],
+  ["hamstrings", ["biceps femoris","semitendinosus","semimembranosus","pes anserinus"]],
+  ["glute_med", ["gluteus medius","gluteus minimus"]],
+  ["glute_max", ["gluteus maximus"]],
+  ["piriformis", ["piriformis","gemellus","obturator","quadratus femoris"]],
+  ["trapezius_upper", ["trapezius"]],
+  ["levator_scapulae", ["levator scapulae"]],
+  ["deltoid", ["deltoid"]],
+  ["supraspinatus", ["supraspinatus"]],
+  ["infraspinatus", ["infraspinatus","teres minor"]],
+  ["pectoralis_major", ["pectoralis major"]],
+  ["pectoralis_minor", ["pectoralis minor","subclavius"]],
+  ["serratus_anterior", ["serratus anterior"]],
+  ["latissimus_dorsi", ["latissimus","teres major"]],
+  ["erector_spinae", ["erector spinae","iliocostalis","longissimus"]],
+  ["quadratus_lumborum", ["quadratus lumborum"]],
+  ["iliopsoas", ["psoas","iliacus"]],
+  ["forearm_extensors", ["extensor carpi","extensor digitorum","extensor digiti","extensor indicis","extensor pollicis","brachioradialis","anconeus","supinator","abductor pollicis longus"]],
+  ["forearm_flexors", ["flexor carpi","flexor digitorum","flexor pollicis","palmaris","pronator"]],
+  ["gastrocnemius_soleus", ["gastrocnemius","soleus","plantaris","calcaneal tendon"]],
+  ["tibialis_anterior", ["tibialis anterior"]]
+];
+const MUSCLE_WORDS = ["muscle","tendon","extensor","flexor","abductor","adductor","interossei","lumbrical",
+  "psoas","iliacus","sartorius","gracilis","pectineus","opponens","brachii","femoris","gastrocnemius","soleus",
+  "fibularis","tibialis","gluteus","piriformis","gemellus","deltoid","trapezius","supraspinatus","infraspinatus",
+  "subscapularis","teres","serratus","rhomboid","palmaris","brachialis","brachioradialis","anconeus",
+  "coracobrachialis","subclavius","popliteus","plantaris","pronator","supinator"];
+
+const wrap=document.getElementById("viewerWrap"), canvas=document.getElementById("canvas3d");
+const loader3d=document.getElementById("loader3d"), loadBar=document.getElementById("loadBar"), loadPct=document.getElementById("loadPct");
+const err3d=document.getElementById("err3d");
+
+let renderer, scene, camera, controls, raycaster, currentRoot=null, pickables=[], autoSpin=true, isolated=false;
+let selected=null, selectedMat=null, frameDist=3;
+const SEL_COLOR=new THREE.Color(0x00f0ff);
+
+function initGL(){
+  renderer=new THREE.WebGLRenderer({
+    canvas, 
+    antialias: window.devicePixelRatio < 2, 
+    alpha: true, 
+    powerPreference: 'high-performance',
+    precision: 'mediump'
+  });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25));
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.outputColorSpace=THREE.SRGBColorSpace;
+  scene=new THREE.Scene();
+  camera=new THREE.PerspectiveCamera(45, 1, 0.01, 5000);
+  controls=new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping=true;
+  controls.dampingFactor=0.08;
+  controls.enablePan=false;
+  controls.autoRotate=true;
+  controls.autoRotateSpeed=1.8;
+  scene.add(new THREE.HemisphereLight(0xeaf4ff, 0x1a2438, 1.25));
+  const key=new THREE.DirectionalLight(0xffffff, 1.6); key.position.set(3,5,4); scene.add(key);
+  const rim=new THREE.DirectionalLight(0x38bdf8, 0.5); rim.position.set(-4,2,-3); scene.add(rim);
+  const fill=new THREE.DirectionalLight(0x00f0ff, 0.35); fill.position.set(0,-3,2); scene.add(fill);
+  raycaster=new THREE.Raycaster();
+  resize(); addEventListener("resize", resize);
+  window.__pcResize=resize;
+  window.__pcCam=camera; window.__pcCtrl=controls; window.__pcTHREE=THREE; window.__pcScene=scene;
+  renderer.setAnimationLoop(()=>{
+    controls.update();
+    renderer.render(scene,camera);
+    updateCallout();
+  });
+}
+function resize(){
+  const w=wrap.clientWidth, h=wrap.clientHeight;
+  if(!renderer||!w||!h) return;
+  renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix();
+  if(currentRoot){
+    const box = new THREE.Box3().setFromObject(currentRoot);
+    const s = box.getSize(new THREE.Vector3());
+    const maxDim = Math.max(s.x, s.y, s.z);
+    if(maxDim > 0){
+      const vFov = (camera.fov * Math.PI) / 180;
+      let dist = (maxDim / 2) / Math.tan(vFov / 2);
+      if (camera.aspect < 1) { dist = dist / camera.aspect; }
+      frameDist = dist * 1.18;
+      window.__pcDist = frameDist;
+      controls.minDistance = frameDist * 0.35;
+      controls.maxDistance = frameDist * 2.8;
+    }
+  }
+}
+
+const gltfLoader=new GLTFLoader();
+const draco=new DRACOLoader();
+draco.setDecoderPath("physiocore_assets/draco/"); /* self-hosted (gstatic mirror) so the model decodes offline */
+gltfLoader.setDRACOLoader(draco);
+
+function classify(name){
+  /* GLTFLoader replaces spaces/dots with underscores in mesh names — normalize before matching */
+  const n=name.toLowerCase().replace(/​/g,"").replace(/_/g," ");
+  const mapped=MESH_MAP.find(([id,keys])=>keys.some(k=>n.includes(k)));
+  const isMuscle=MUSCLE_WORDS.some(w=>n.includes(w)) && !n.includes("bursa") && !n.includes("sheath") && !n.includes("retinaculum");
+  return { muscleId: mapped?mapped[0]:null, isMuscle };
+}
+function cleanName(n){
+  return n.replace(/​/g,"").replace(/_mirrored$/,"").replace(/[._ ]?[rl][\d_]*$/i,"").replace(/_/g," ").replace(/[()]/g,"").trim();
+}
+
+function setProgress(p,msg){
+  loadBar.style.width=(p*100).toFixed(0)+"%";
+  loadPct.innerHTML = msg || ('טוען מודל אנטומי… <bdi class="num" dir="ltr">' + (p * 100).toFixed(0) + '%</bdi>');
+}
+
+/* names differ slightly between files ("vertebra"/"vertebrae", zero-width spaces, trailing dots) */
+function normName(n){
+  return (n||"").toLowerCase().replace(/​/g,"").replace(/vertebrae/g,"vertebra").replace(/[.\s]+$/,"").trim();
+}
+
+async function loadBody(){
+  clearSelection();
+  loader3d.classList.remove("hide"); err3d.classList.remove("show"); setProgress(0);
+  try{
+    currentRoot=new THREE.Group();
+    const prog=new Array(BODY_FILES.length).fill(0);
+    const parts=await Promise.all(BODY_FILES.map((f,i)=>new Promise((res,rej)=>
+      gltfLoader.load(f, res, ev=>{
+        if(ev.total){ prog[i]=ev.loaded/ev.total; setProgress(prog.reduce((a,b)=>a+b,0)/prog.length); }
+      }, rej))));
+
+    /* Dedupe pass 1: normalized names (upper-limb ∩ lower-limb share L1-L5, sacrum, T12, discs).
+       Dedupe pass 2: spatial — the skeleton file repeats limb bones under different names
+       (e.g. "Costal cart of 1st rib" vs "Costal cartilage"); drop any mesh whose bounding box
+       coincides with one already kept. */
+    const seenNames = new Set();
+    const keptBoxes = [];
+    pickables=[];
+
+    const sameBox=(a,b)=>Math.abs(a.min.x-b.min.x)<0.004 && Math.abs(a.min.y-b.min.y)<0.004 && Math.abs(a.min.z-b.min.z)<0.004
+                      && Math.abs(a.max.x-b.max.x)<0.004 && Math.abs(a.max.y-b.max.y)<0.004 && Math.abs(a.max.z-b.max.z)<0.004;
+
+    parts.forEach(g=>{
+      g.scene.updateMatrixWorld(true);
+      g.scene.traverse(o=>{
+        if(!o.isMesh) return;
+        const rawName = o.name || o.parent?.name || "";
+        const key = normName(rawName);
+        o.geometry.computeBoundingBox();
+        const bb = o.geometry.boundingBox;
+        if((key && seenNames.has(key)) || keptBoxes.some(k=>sameBox(k,bb))){
+          o.visible = false;
+          return;
+        }
+        if(key) seenNames.add(key);
+        keptBoxes.push(bb.clone());
+
+        const meta = classify(rawName);
+        o.userData.pc = { name: rawName, ...meta, baseOpacity: o.material.opacity ?? 1,
+                          cx:(bb.min.x+bb.max.x)/2, minX:bb.min.x, maxX:bb.max.x };
+        if(o.material){
+          o.material = o.material.clone();
+          o.material.side = THREE.DoubleSide;
+        }
+        pickables.push(o);
+          o.matrixAutoUpdate = false;
+          o.updateMatrix();
+      });
+      currentRoot.add(g.scene);
+    });
+
+    /* The dataset is a right hemibody (right side at negative x, midline exactly at x=0).
+       Mirror across x=0 only structures that are fully on the RIGHT side:
+       - midline structures (span x=0: vertebrae, sacrum, sternum, mandible, occipital…) must not be duplicated;
+       - the few structures the dataset ships as explicit LEFT (e.g. "Parietal bone left") already
+         have their right twin, so mirroring them would stack a duplicate onto the right side. */
+    currentRoot.updateMatrixWorld(true);
+    const mirrorGroup=new THREE.Group();
+    const srcMeshes=[...pickables];
+
+    srcMeshes.forEach(o=>{
+      const pc=o.userData.pc;
+      const crossesMidline = pc.minX < -0.004 && pc.maxX > 0.004;
+      const isRightSide = !crossesMidline && pc.cx < 0;
+      if(!isRightSide) return;
+
+      const m2=new THREE.Mesh(o.geometry, o.material);
+      m2.name = (o.name || "") + "_mirrored";
+      m2.matrixAutoUpdate=false;
+      m2.matrix.copy(o.matrixWorld);
+      m2.matrix.premultiply(new THREE.Matrix4().makeScale(-1,1,1));
+      m2.userData.pc=Object.assign({}, pc, {mirrored:true});
+      mirrorGroup.add(m2);
+      pickables.push(m2);
+    });
+    currentRoot.add(mirrorGroup);
+
+    /* Center and frame the assembled full body at (0,0,0) */
+    const box=new THREE.Box3().setFromObject(currentRoot);
+    const c=box.getCenter(new THREE.Vector3()), s=box.getSize(new THREE.Vector3());
+    currentRoot.position.sub(c);
+    scene.add(currentRoot);
+    currentRoot.updateMatrixWorld(true);
+
+    const maxDim = Math.max(s.x, s.y, s.z);
+    const vFov = (camera.fov * Math.PI) / 180;
+    let dist = (maxDim / 2) / Math.tan(vFov / 2);
+    if (camera.aspect < 1) { dist = dist / camera.aspect; }
+    frameDist = dist * 1.18;
+    window.__pcDist = frameDist;
+    camera.near = frameDist / 100;
+    camera.far = frameDist * 20;
+    camera.updateProjectionMatrix();
+
+    controls.target.set(0,0,0);
+    controls.minDistance = frameDist * 0.35;
+    controls.maxDistance = frameDist * 2.8;
+    controls.enablePan = false;
+    controls.autoRotate = autoSpin;
+    controls.autoRotateSpeed = 1.8;
+
+    setView("front", true);
+    applyIsolation();
+    loader3d.classList.add("hide");
+    window.__pcModelReady=(window.__pcModelReady||0)+1;
+    window.__pcMeshCount=pickables.length;
+    window.__pcPickables=pickables; window.__pcRoot=currentRoot;
+  }catch(e){
+    console.error("PhysioCore 3D load failed:", e);
+    loader3d.classList.add("hide"); err3d.classList.add("show");
+    if(location.protocol==="file:")
+      document.getElementById("err3dMsg").innerHTML = "הקובץ נפתח ישירות מהדיסק. יש לפתוח דרך כתובת השרת (<bdi>Drop</bdi> בכתובת ה־<bdi>Tailscale</bdi>) כדי שהמודל ייטען.";
+  }
+}
+
+/* animated camera view presets — calibrated: the body faces +Z in this dataset */
+let viewAnim=null;
+function setView(which, instant){
+  const y=frameDist*0.02;
+  const pos={ front:[0,y,frameDist], back:[0,y,-frameDist], side:[-frameDist,y,0] }[which];
+  if(!pos) return;
+  const target=new THREE.Vector3(...pos);
+  if(instant){
+    camera.position.copy(target);
+    controls.target.set(0,0,0);
+    controls.update();
+    return;
+  }
+  const from=camera.position.clone(), t0=performance.now();
+  cancelAnimationFrame(viewAnim);
+  const step=(t)=>{
+    const k=Math.min(1,(t-t0)/450), e=1-Math.pow(1-k,3);
+    camera.position.lerpVectors(from,target,e);
+    controls.target.set(0,0,0);
+    controls.update();
+    if(k<1) viewAnim=requestAnimationFrame(step);
+  };
+  viewAnim=requestAnimationFrame(step);
+}
+
+function applyIsolation(){
+  pickables.forEach(o=>{
+    const pc=o.userData.pc;
+    if(isolated && !pc.isMuscle){ o.material.transparent=true; o.material.opacity=0.10; o.material.depthWrite=false; }
+    else{ o.material.opacity=pc.baseOpacity; o.material.transparent=pc.baseOpacity<1; o.material.depthWrite=true; }
+  });
+}
+function clearSelection(){
+  if(selected && selectedMat){ selected.material=selectedMat; }
+  selected=null; selectedMat=null;
+  hideCallout();
+}
+window.__pcClearSel=clearSelection;
+function structType(nLow, isMuscle){
+  if(isMuscle) return "שריר / גיד";
+  if(nLow.includes("fascia")||nLow.includes("aponeurosis")||nLow.includes("retinaculum")||nLow.includes("sheath")||nLow.includes("membrane")) return "פאציה / רקמת חיבור";
+  if(nLow.includes("cart")||nLow.includes("disc")||nLow.includes("meniscus")||nLow.includes("annulus")) return "סחוס / דיסק";
+  if(nLow.includes("ligament")||nLow.includes("lig")) return "רצועה";
+  if(nLow.includes("artery")||nLow.includes("vein")||nLow.includes("nerve")||nLow.includes("aorta")||nLow.includes("plexus")) return "כלי דם / עצב";
+  if(nLow.includes("incisor")||nLow.includes("molar")||nLow.includes("canine")||nLow.includes("premolar")||nLow.includes("tooth")) return "שן";
+  if(["bone","vertebra","sacrum","coccyx","femur","tibia","fibula","humerus","radius","ulna","clavicle","scapula","sternum","rib","patella","pelvis","calcaneus","talus","ilium","ischium","pubis","skull","mandible","maxilla","occipital","parietal","frontal","temporal","sphenoid","ethmoid","zygomatic","nasal","vomer","palatine","lacrimal","concha","hyoid","atlas","axis","manubrium","carpal","tarsal","metacarpal","metatarsal","phalanx","cuneiform","cuboid","navicular","scaphoid","lunate","triquetrum","pisiform","trapezium","trapezoid","capitate","hamate","sesamoid"].some(w=>nLow.includes(w))) return "עצם / שלד";
+  return "מבנה אנטומי";
+}
+
+function select(mesh, worldPoint){
+  clearSelection();
+  selected=mesh; selectedMat=mesh.material;
+  const m=mesh.material.clone();
+  if(m.emissive) { m.emissive=SEL_COLOR.clone(); m.emissiveIntensity=0.85; }
+  else m.color=SEL_COLOR.clone();
+  mesh.material=m;
+
+  const pc=mesh.userData.pc;
+  const latin=cleanName(pc.name);
+  const nLow=pc.name.toLowerCase();
+  /* side from geometry (midline at x=0, right side at -x), not from name suffixes */
+  const crossesMidline = pc.minX < -0.004 && pc.maxX > 0.004;
+  const side = pc.mirrored? "צד שמאל" : (crossesMidline? "קו האמצע (<bdi>Midline</bdi>)" : (pc.cx < 0? "צד ימין" : "צד שמאל"));
+  const typeStr = structType(nLow, pc.isMuscle);
+  const desc = pc.isMuscle? "שריר או גיד אנטומי. ניתן להשתמש ב'בידוד שרירים' למיקוד בשכבת השרירים." : "מבנה גרמי, רצועתי, סחוסי או וסקולרי תומך.";
+
+  const info = { latin, side, typeStr, desc, muscleId: pc.muscleId };
+  const brief = pc.muscleId && window.__muscleBrief ? window.__muscleBrief(pc.muscleId) : null;
+  showCallout(info, worldPoint, brief);
+}
+
+/* ---------- animated leader-line callout (annotation note on the tapped point) ---------- */
+const calloutEl=document.getElementById("callout"), cLine=document.getElementById("calloutLine");
+const cDot=document.getElementById("calloutDot"), cRing=document.getElementById("calloutDotRing");
+const cType=document.getElementById("cType"), cSide=document.getElementById("cSide");
+const cName=document.getElementById("cName"), cLat=document.getElementById("cLat");
+const cDesc=document.getElementById("cDesc"), cMore=document.getElementById("cMore");
+let calloutAnchor=null, calloutInfo=null, calloutT0=0, calloutOut=false;
+
+cMore.addEventListener("click",()=>{ if(calloutInfo && window.__openGlossary) window.__openGlossary(calloutInfo); });
+
+function showCallout(info, worldPoint, brief){
+  calloutInfo=info;
+  cType.innerHTML=info.typeStr;
+  cSide.innerHTML=info.side;
+  cName.textContent = brief ? brief.name : info.latin;
+  cLat.textContent = info.latin;
+  cLat.style.display = brief ? "" : "none"; /* unmapped structures: title already IS the Latin name */
+  cDesc.textContent = brief && brief.brief ? brief.brief : info.desc;
+  calloutAnchor = worldPoint ? worldPoint.clone() : new THREE.Vector3();
+  calloutOut=false; calloutT0=performance.now();
+  updateCallout();
+  calloutEl.classList.add("show");
+  cDot.setAttribute("opacity","1"); cRing.setAttribute("opacity","1");
+  window.__pcCallout = true;
+}
+function hideCallout(){
+  if(!calloutAnchor || calloutOut) return;
+  calloutEl.classList.remove("show");
+  calloutOut=true; calloutT0=performance.now();
+  window.__pcCallout = false;
+}
+function updateCallout(){
+  if(!calloutAnchor) return;
+  const now=performance.now(), k=Math.min(1,(now-calloutT0)/380);
+  const e=1-Math.pow(1-k,3);                      /* easeOutCubic */
+  const prog = calloutOut ? 1-e : e;
+  if(calloutOut && k>=1){                          /* out-animation finished — tear down */
+    calloutAnchor=null; calloutInfo=null;
+    cLine.setAttribute("d",""); cDot.setAttribute("opacity","0"); cRing.setAttribute("opacity","0");
+    return;
+  }
+  const w=wrap.clientWidth, h=wrap.clientHeight;
+  const v=calloutAnchor.clone().project(camera);
+  if(v.z>1){                                       /* anchor behind the camera — hide visuals, keep state */
+    cLine.setAttribute("d",""); cDot.setAttribute("opacity","0"); cRing.setAttribute("opacity","0");
+    return;
+  }
+  cDot.setAttribute("opacity","1"); cRing.setAttribute("opacity","1");
+  const ax=(v.x*0.5+0.5)*w, ay=(-v.y*0.5+0.5)*h;
+
+  /* place the note on the emptier half, clamped inside the viewer (clear of the top toolbar) */
+  const bw=calloutEl.offsetWidth||218, bh=calloutEl.offsetHeight||120, pad=10;
+  const placeLeft = ax > w/2;
+  const bx = placeLeft ? pad : Math.max(pad, w-bw-pad);
+  let by = ay - bh/2;
+  by = Math.max(56, Math.min(h-bh-pad, by));
+  calloutEl.style.left=bx+"px"; calloutEl.style.top=by+"px";
+
+  /* elbow leader line: tapped point → bend → facing edge of the note */
+  const ex = placeLeft ? bx+bw : bx;
+  const ey = Math.max(by+14, Math.min(by+bh-14, ay));
+  const mx = ex + (placeLeft ? 20 : -20);
+  cLine.setAttribute("d",`M ${ax.toFixed(1)} ${ay.toFixed(1)} L ${mx.toFixed(1)} ${ey.toFixed(1)} L ${ex.toFixed(1)} ${ey.toFixed(1)}`);
+  const L=cLine.getTotalLength();
+  cLine.style.strokeDasharray=L;
+  cLine.style.strokeDashoffset=L*(1-prog);
+  cDot.setAttribute("cx",ax); cDot.setAttribute("cy",ay);
+  cRing.setAttribute("cx",ax); cRing.setAttribute("cy",ay);
+}
+
+/* pointer pick — distinguish tap from drag */
+let pDown=null;
+canvas.addEventListener("pointerdown",e=>{ pDown=[e.clientX,e.clientY]; });
+canvas.addEventListener("pointerup",e=>{
+  if(!pDown) return;
+  const dx=e.clientX-pDown[0], dy=e.clientY-pDown[1]; pDown=null;
+  if(dx*dx+dy*dy>36) return;                       /* was a drag */
+  autoSpin=false; controls.autoRotate=false;
+  btnSpin.classList.remove("on");
+  const r=canvas.getBoundingClientRect();
+  const v=new THREE.Vector2(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1);
+  raycaster.setFromCamera(v,camera);
+  const hits=raycaster.intersectObjects(pickables,false)
+    .filter(h=>!(isolated && !h.object.userData.pc.isMuscle));
+  if(hits.length) select(hits[0].object, hits[0].point);
+  else clearSelection();
+});
+
+/* toolbar */
+const viewBtns={ front:document.getElementById("btnFront"), back:document.getElementById("btnBack"), side:document.getElementById("btnSide") };
+Object.entries(viewBtns).forEach(([k,b])=>b.addEventListener("click",()=>{
+  Object.values(viewBtns).forEach(x=>x.classList.remove("on")); b.classList.add("on");
+  autoSpin=false; controls.autoRotate=false; btnSpin.classList.remove("on");
+  setView(k);
+}));
+const btnIso=document.getElementById("btnIso");
+btnIso.addEventListener("click",()=>{ isolated=!isolated; btnIso.classList.toggle("on",isolated); applyIsolation(); });
+const btnSpin=document.getElementById("btnSpin");
+btnSpin.classList.add("on");
+btnSpin.addEventListener("click",()=>{
+  autoSpin=!autoSpin;
+  controls.autoRotate=autoSpin;
+  btnSpin.classList.toggle("on",autoSpin);
+});
+
+/* zoom buttons (phone-friendly; pinch works through OrbitControls touch) */
+function zoomBy(f){
+  const dir=camera.position.clone().sub(controls.target);
+  const d=Math.min(controls.maxDistance, Math.max(controls.minDistance, dir.length()*f));
+  camera.position.copy(controls.target).add(dir.normalize().multiplyScalar(d));
+  controls.update();
+}
+document.getElementById("btnZoomIn").addEventListener("click",()=>zoomBy(0.78));
+document.getElementById("btnZoomOut").addEventListener("click",()=>zoomBy(1.28));
+
+/* boot */
+try{
+  initGL();
+  loadBody();
+}catch(e){
+  console.error(e);
+  loader3d.classList.add("hide"); err3d.classList.add("show");
+}
+</script>
+</body>
+</html>
